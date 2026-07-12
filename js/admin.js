@@ -71,6 +71,8 @@ function iniciarPainel() {
   painelIniciado = true;
   escutarInscricoes();
   escutarTurmas();
+  escutarTimes();
+  escutarTimeMembros();
   montarFormsPremiacao();
   preencherSelectsEdicao();
   carregarConfiguracoes();
@@ -82,6 +84,7 @@ function escutarInscricoes() {
     renderizarTabelaInscritos();
     renderizarEstatisticas();
     renderizarTabelaTurmas();
+    renderizarPainelTimes();
   });
 }
 
@@ -182,6 +185,15 @@ async function aprovarInscricaoClient(inscricaoId) {
     aprovadoEm: new Date().toISOString()
   });
 
+  await db.collection(COL_PARTICIPANTES_PUBLICOS).doc(idParticipante).set({
+    idParticipante,
+    authUid,
+    nomeCompleto: inscricao.nomeCompleto || "",
+    turmaNome: inscricao.turmaNome || "",
+    jogoId: inscricao.jogoId || "",
+    possuiPasse: !!inscricao.possuiPasse
+  });
+
   return {
     idParticipante,
     senha,
@@ -255,6 +267,10 @@ document.getElementById("tabelaInscritos").addEventListener("click", async (e) =
   if (btn.dataset.acao === "cancelar") {
     if (!confirm("Cancelar (excluir) esta inscrição? Essa ação não pode ser desfeita.")) return;
     await db.collection(COL_INSCRICOES).doc(id).delete();
+    if (item && item.idParticipante) {
+      await db.collection(COL_TIME_MEMBROS).doc(item.idParticipante).delete().catch(() => {});
+      await db.collection(COL_PARTICIPANTES_PUBLICOS).doc(item.idParticipante).delete().catch(() => {});
+    }
   }
 
   if (btn.dataset.acao === "editar") abrirModalEdicao(item);
@@ -287,17 +303,35 @@ document.getElementById("formEditarParticipante").addEventListener("submit", asy
   const jogo = CATALOGO_JOGOS.find(j => j.id === jogoId);
   const tipo = document.getElementById("editTipo").value;
 
+  const nomeCompleto = document.getElementById("editNome").value.trim();
+  const possuiPasse = tipo === "passe";
+
   await db.collection(COL_INSCRICOES).doc(id).update({
-    nomeCompleto: document.getElementById("editNome").value.trim(),
+    nomeCompleto,
     turmaId, turmaNome: turma ? turma.nome : "",
     jogoId, jogoNome: jogo ? jogo.nome : "",
-    possuiPasse: tipo === "passe",
+    possuiPasse,
     tipoInscricao: tipo,
     valor: tipo === "passe" ? VALOR_PASSE_TJE : VALOR_JOGO_UNITARIO,
     statusPagamento: document.getElementById("editStatus").value,
     email: document.getElementById("editEmail").value.trim(),
     telefoneCapitao: document.getElementById("editTelefone").value.trim()
   });
+
+  // Mantém o perfil público em dia (usado na montagem de times). Só existe
+  // depois que o participante foi aprovado ao menos uma vez.
+  const itemAtual = inscricoesCache.find(i => i.id === id);
+  if (itemAtual && itemAtual.idParticipante) {
+    await db.collection(COL_PARTICIPANTES_PUBLICOS).doc(itemAtual.idParticipante).set({
+      idParticipante: itemAtual.idParticipante,
+      authUid: itemAtual.authUid || "",
+      nomeCompleto,
+      turmaNome: turma ? turma.nome : "",
+      jogoId,
+      possuiPasse
+    }, { merge: true });
+  }
+
   modalEditar.classList.add("hidden");
 });
 
@@ -377,6 +411,276 @@ document.getElementById("tabelaTurmas").addEventListener("click", async (e) => {
     if (!confirm("Remover esta turma? Ela deixará de aparecer no formulário de inscrição.")) return;
     await db.collection(COL_TURMAS).doc(id).delete();
   }
+});
+
+// ---- Times (Free Fire / CS2) ----
+
+let timesCache = [];
+let timeMembrosCache = [];
+
+function escutarTimes() {
+  db.collection(COL_TIMES).onSnapshot(snap => {
+    timesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderizarPainelTimes();
+  });
+}
+
+function escutarTimeMembros() {
+  db.collection(COL_TIME_MEMBROS).onSnapshot(snap => {
+    timeMembrosCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderizarPainelTimes();
+  });
+}
+
+function renderizarPainelTimes() {
+  renderizarTabelaTimes();
+  renderizarTabelaSemTime();
+}
+
+function membrosDoTime(timeId) {
+  return timeMembrosCache.filter(m => m.timeId === timeId);
+}
+
+function nomeJogoTime(jogoId) {
+  return CATALOGO_JOGOS.find(j => j.id === jogoId)?.nome || jogoId;
+}
+
+function renderizarTabelaTimes() {
+  const tbody = document.getElementById("tabelaTimes");
+  if (!tbody) return;
+
+  if (!timesCache.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-people-group"></i><p>Nenhum time cadastrado ainda.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = timesCache
+    .slice()
+    .sort((a, b) => (a.jogoId || "").localeCompare(b.jogoId || "") || (a.nome || "").localeCompare(b.nome || ""))
+    .map(t => {
+      const membros = membrosDoTime(t.id);
+      const tamanho = TAMANHO_TIME[t.jogoId] || "—";
+      const capitao = membros.find(m => m.idParticipante === t.criadorIdParticipante);
+      return `
+        <tr>
+          <td>${t.nome || "—"}</td>
+          <td>${nomeJogoTime(t.jogoId)}</td>
+          <td>${capitao ? `${capitao.nomeCompleto} (${capitao.idParticipante})` : (t.criadorIdParticipante || "—")}</td>
+          <td>${membros.length} / ${tamanho}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn btn-ghost btn-sm" data-acao="vertime" data-id="${t.id}" title="Ver membros"><i class="fa-solid fa-eye"></i></button>
+              <button class="btn btn-ghost btn-sm" data-acao="renomeartime" data-id="${t.id}" title="Renomear"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-danger btn-sm" data-acao="excluirtime" data-id="${t.id}" title="Excluir time"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>`;
+    }).join("");
+}
+
+function participantesSemTime() {
+  const idsComTime = new Set(timeMembrosCache.map(m => m.id));
+  return inscricoesCache.filter(i =>
+    i.statusPagamento === "aprovado" &&
+    i.idParticipante &&
+    jogoTemTime(i.jogoId) &&
+    !idsComTime.has(i.idParticipante)
+  );
+}
+
+function renderizarTabelaSemTime() {
+  const tbody = document.getElementById("tabelaSemTime");
+  if (!tbody) return;
+
+  const lista = participantesSemTime();
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-user-check"></i><p>Todo mundo elegível já está em um time.</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(i => `
+    <tr>
+      <td>${i.idParticipante}</td>
+      <td>${i.nomeCompleto || "—"}</td>
+      <td>${i.possuiPasse ? "Passe TJE" : nomeJogoTime(i.jogoId)}</td>
+      <td>
+        <div class="table-actions">
+          <button class="btn btn-ghost btn-sm" data-acao="addtimeexistente" data-id="${i.id}" title="Adicionar a um time existente"><i class="fa-solid fa-user-plus"></i></button>
+          <button class="btn btn-primary btn-sm" data-acao="criartimepara" data-id="${i.id}" title="Criar novo time com este participante como capitão"><i class="fa-solid fa-plus"></i> Novo time</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function excluirTimeCompleto(timeId) {
+  const batch = db.batch();
+  membrosDoTime(timeId).forEach(m => batch.delete(db.collection(COL_TIME_MEMBROS).doc(m.id)));
+  batch.delete(db.collection(COL_TIMES).doc(timeId));
+  await batch.commit();
+}
+
+document.getElementById("tabelaTimes")?.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-acao]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const time = timesCache.find(t => t.id === id);
+  if (!time) return;
+
+  if (btn.dataset.acao === "vertime") abrirModalVerTime(time);
+
+  if (btn.dataset.acao === "renomeartime") {
+    const novoNome = prompt("Novo nome do time:", time.nome || "");
+    if (novoNome && novoNome.trim()) await db.collection(COL_TIMES).doc(id).update({ nome: novoNome.trim() });
+  }
+
+  if (btn.dataset.acao === "excluirtime") {
+    if (!confirm(`Excluir o time "${time.nome}"? Todos os membros ficarão sem time. Essa ação não pode ser desfeita.`)) return;
+    btn.disabled = true;
+    try {
+      await excluirTimeCompleto(id);
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível excluir o time.");
+    }
+    btn.disabled = false;
+  }
+});
+
+const modalVerTime = document.getElementById("modalVerTime");
+function abrirModalVerTime(time) {
+  document.getElementById("verTimeNome").textContent = time.nome || "—";
+  document.getElementById("verTimeJogo").textContent = nomeJogoTime(time.jogoId);
+  const lista = document.getElementById("verTimeMembros");
+  const membros = membrosDoTime(time.id);
+  lista.innerHTML = membros.map(m => `
+    <div class="table-actions" style="justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
+      <span>${m.nomeCompleto} (${m.idParticipante})${m.idParticipante === time.criadorIdParticipante ? " — <strong>Capitão</strong>" : ""}</span>
+      <button class="btn btn-danger btn-sm" data-acao="removermembro" data-id="${m.id}" data-time="${time.id}" title="Remover do time"><i class="fa-solid fa-user-minus"></i></button>
+    </div>
+  `).join("") || `<p style="color:var(--text-muted); font-size:13.5px;">Nenhum membro.</p>`;
+  modalVerTime.classList.remove("hidden");
+}
+document.getElementById("btnFecharVerTime")?.addEventListener("click", () => modalVerTime.classList.add("hidden"));
+
+document.getElementById("verTimeMembros")?.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-acao='removermembro']");
+  if (!btn) return;
+  if (!confirm("Remover este participante do time?")) return;
+  await db.collection(COL_TIME_MEMBROS).doc(btn.dataset.id).delete();
+  const time = timesCache.find(t => t.id === btn.dataset.time);
+  if (time) setTimeout(() => abrirModalVerTime(time), 150);
+});
+
+document.getElementById("tabelaSemTime")?.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-acao]");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const item = inscricoesCache.find(i => i.id === id);
+  if (!item) return;
+
+  if (btn.dataset.acao === "criartimepara") {
+    const nome = prompt(`Nome do novo time (capitão: ${item.nomeCompleto}):`);
+    if (!nome || !nome.trim()) return;
+
+    let jogoId = item.jogoId;
+    if (item.possuiPasse && !jogoTemTime(jogoId)) {
+      jogoId = prompt("Esse participante tem Passe TJE. Time para qual jogo? (freefire ou cs2)", "freefire");
+    }
+    if (!jogoTemTime(jogoId)) {
+      alert("Times só existem para Free Fire e CS2.");
+      return;
+    }
+
+    btn.disabled = true;
+    try {
+      const timeRef = db.collection(COL_TIMES).doc();
+      const batch = db.batch();
+      batch.set(timeRef, {
+        nome: nome.trim(),
+        jogoId,
+        criadorUid: item.authUid || "",
+        criadorIdParticipante: item.idParticipante,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      batch.set(db.collection(COL_TIME_MEMBROS).doc(item.idParticipante), {
+        timeId: timeRef.id,
+        jogoId,
+        idParticipante: item.idParticipante,
+        nomeCompleto: item.nomeCompleto || "",
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await batch.commit();
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível criar o time.");
+    }
+    btn.disabled = false;
+  }
+
+  if (btn.dataset.acao === "addtimeexistente") {
+    let jogoId = item.jogoId;
+    const timesDoJogo = timesCache.filter(t => item.possuiPasse ? jogoTemTime(t.jogoId) : t.jogoId === jogoId);
+    if (!timesDoJogo.length) {
+      alert("Ainda não existe nenhum time compatível com este participante. Crie um novo time pra ele primeiro.");
+      return;
+    }
+    const opcoes = timesDoJogo.map((t, idx) => `${idx + 1} — ${t.nome} (${nomeJogoTime(t.jogoId)}, ${membrosDoTime(t.id).length}/${TAMANHO_TIME[t.jogoId]})`).join("\n");
+    const escolha = prompt(`Adicionar ${item.nomeCompleto} a qual time?\n\n${opcoes}\n\nDigite o número:`);
+    const idx = parseInt(escolha, 10) - 1;
+    const timeEscolhido = timesDoJogo[idx];
+    if (!timeEscolhido) return;
+
+    try {
+      await db.collection(COL_TIME_MEMBROS).doc(item.idParticipante).set({
+        timeId: timeEscolhido.id,
+        jogoId: timeEscolhido.jogoId,
+        idParticipante: item.idParticipante,
+        nomeCompleto: item.nomeCompleto || "",
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível adicionar ao time.");
+    }
+  }
+});
+
+document.getElementById("btnSincronizarPerfis")?.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  const aprovados = inscricoesCache.filter(i => i.statusPagamento === "aprovado" && i.idParticipante);
+  if (!aprovados.length) {
+    alert("Nenhum participante aprovado encontrado.");
+    return;
+  }
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner"></div> Sincronizando...';
+  try {
+    // Firestore só aceita até 500 operações por lote — quebra em pedaços se precisar.
+    for (let i = 0; i < aprovados.length; i += 450) {
+      const pedaco = aprovados.slice(i, i + 450);
+      const batch = db.batch();
+      pedaco.forEach(item => {
+        batch.set(db.collection(COL_PARTICIPANTES_PUBLICOS).doc(item.idParticipante), {
+          idParticipante: item.idParticipante,
+          authUid: item.authUid || "",
+          nomeCompleto: item.nomeCompleto || "",
+          turmaNome: item.turmaNome || "",
+          jogoId: item.jogoId || "",
+          possuiPasse: !!item.possuiPasse
+        }, { merge: true });
+      });
+      await batch.commit();
+    }
+    alert(`${aprovados.length} perfil(is) sincronizado(s) com sucesso.`);
+  } catch (err) {
+    console.error(err);
+    alert("Não foi possível sincronizar todos os perfis.");
+  }
+  btn.disabled = false;
+  btn.innerHTML = original;
 });
 
 function montarFormsPremiacao() {

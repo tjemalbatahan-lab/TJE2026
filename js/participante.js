@@ -109,6 +109,8 @@ function renderizarPainel(id, d) {
 
   renderizarCronograma(d.cronograma || []);
   window._participanteAtual = { id, ...d };
+
+  iniciarSecaoTime(id, d);
 }
 
 function iniciais(nome) {
@@ -177,6 +179,209 @@ document.getElementById("formAlterarSenha").addEventListener("submit", async (e)
     erroBox.classList.remove("hidden");
   }
 });
+
+// ---- Meu Time (Free Fire / CS2) ----
+
+async function iniciarSecaoTime(id, d) {
+  const secao = document.getElementById("secaoTime");
+  const elInfo = document.getElementById("timeInfo");
+  const elForm = document.getElementById("formCriarTime");
+
+  const elegivel = d.statusPagamento === "aprovado" && (jogoTemTime(d.jogoId) || d.possuiPasse);
+  if (!elegivel) {
+    secao.classList.add("hidden");
+    return;
+  }
+  secao.classList.remove("hidden");
+  elInfo.classList.add("hidden");
+  elForm.classList.add("hidden");
+  document.getElementById("timeErroCarregamento")?.remove();
+
+  try {
+    const membroDoc = await db.collection(COL_TIME_MEMBROS).doc(id).get();
+    if (membroDoc.exists) {
+      await renderizarTimeExistente(id, membroDoc.data());
+    } else {
+      prepararFormularioCriarTime(id, d);
+    }
+  } catch (err) {
+    console.error("Erro ao carregar informações do time:", err);
+    secao.insertAdjacentHTML("beforeend", `
+      <div class="alert alert-error" id="timeErroCarregamento">
+        Não foi possível carregar as informações do seu time agora. Recarregue a página em alguns instantes;
+        se o problema continuar, avise a organização do torneio.
+      </div>
+    `);
+  }
+}
+
+async function renderizarTimeExistente(idParticipante, membroData) {
+  const elInfo = document.getElementById("timeInfo");
+  document.getElementById("formCriarTime").classList.add("hidden");
+
+  const timeDoc = await db.collection(COL_TIMES).doc(membroData.timeId).get();
+  if (!timeDoc.exists) {
+    elInfo.classList.add("hidden");
+    return;
+  }
+  const time = timeDoc.data();
+
+  const membrosSnap = await db.collection(COL_TIME_MEMBROS).where("timeId", "==", membroData.timeId).get();
+  const membros = membrosSnap.docs.map(d => d.data());
+
+  document.getElementById("timeInfoNome").textContent = time.nome || "—";
+  document.getElementById("timeInfoJogo").textContent = nomeJogoParticipante(time.jogoId);
+
+  const listaEl = document.getElementById("timeInfoMembros");
+  listaEl.innerHTML = membros.map(m => `
+    <div style="display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:14px;">
+      <span>${m.nomeCompleto}</span>
+      <span style="color:var(--text-muted);">${m.idParticipante}${m.idParticipante === time.criadorIdParticipante ? " · Capitão" : ""}</span>
+    </div>
+  `).join("");
+
+  elInfo.classList.remove("hidden");
+}
+
+function nomeJogoParticipante(jogoId) {
+  return CATALOGO_JOGOS.find(j => j.id === jogoId)?.nome || jogoId;
+}
+
+function prepararFormularioCriarTime(id, d) {
+  const elForm = document.getElementById("formCriarTime");
+  document.getElementById("timeInfo").classList.add("hidden");
+
+  const campoJogo = document.getElementById("campoTimeJogo");
+  const selectJogo = document.getElementById("timeSelectJogo");
+  const btnAdd = document.getElementById("btnAddIdTime");
+  if (btnAdd) btnAdd.classList.add("hidden"); // time tem tamanho fixo, não dá pra adicionar além do necessário
+
+  if (jogoTemTime(d.jogoId)) {
+    campoJogo.classList.add("hidden");
+  } else {
+    // Passe TJE: participante escolhe pra qual dos dois jogos de time é essa equipe.
+    campoJogo.classList.remove("hidden");
+  }
+
+  const jogoAtual = () => (jogoTemTime(d.jogoId) ? d.jogoId : selectJogo.value);
+
+  const container = document.getElementById("timeIdsContainer");
+  montarCamposIdFixos(container, jogoAtual());
+
+  selectJogo.onchange = () => montarCamposIdFixos(container, jogoAtual());
+
+  elForm.classList.remove("hidden");
+  elForm.onsubmit = (e) => criarTime(e, id, d, jogoAtual);
+}
+
+// O time precisa fechar com o número exato de integrantes do jogo (Free Fire = 4,
+// CS2 = 5), então já mostramos os campos de ID necessários — nada de "adicionar
+// mais" ou deixar faltando.
+function montarCamposIdFixos(container, jogoId) {
+  container.innerHTML = "";
+  const qtd = TAMANHO_TIME[jogoId] - 1;
+  const label = document.getElementById("labelQtdTime");
+  if (label) label.textContent = `Seu ID já entra automaticamente. Informe o ID d${qtd > 1 ? "os outros" : "o outro"} ${qtd} integrante${qtd > 1 ? "s" : ""} (obrigatório — o time de ${nomeJogoParticipante(jogoId)} precisa ter ${TAMANHO_TIME[jogoId]} pessoas):`;
+  for (let i = 0; i < qtd; i++) {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <input type="text" class="time-id-input" placeholder="ID do participante (ex: TJE2026-0002)" required
+        style="width:100%; padding:11px 14px; border:1px solid var(--border); border-radius:9px; background:var(--bg-elevated); color:var(--text);">
+    `;
+    container.appendChild(wrap);
+  }
+}
+
+async function criarTime(e, id, d, jogoAtualFn) {
+  e.preventDefault();
+  const erroBox = document.getElementById("timeErro");
+  erroBox.classList.add("hidden");
+
+  const jogoId = jogoAtualFn();
+  const nome = document.getElementById("timeInputNome").value.trim();
+  if (!nome) {
+    mostrarErroTime("Digite o nome do time.");
+    return;
+  }
+
+  const idsDigitados = Array.from(document.querySelectorAll("#timeIdsContainer .time-id-input"))
+    .map(inp => inp.value.trim().toUpperCase())
+    .filter(Boolean);
+
+  const idsUnicos = [...new Set(idsDigitados)].filter(x => x !== id);
+  const maxIntegrantes = TAMANHO_TIME[jogoId];
+
+  if (idsDigitados.length < maxIntegrantes - 1) {
+    mostrarErroTime(`Preencha o ID de todos os integrantes. O time de ${nomeJogoParticipante(jogoId)} precisa ter exatamente ${maxIntegrantes} pessoas (você + ${maxIntegrantes - 1}).`);
+    return;
+  }
+  if (idsUnicos.length !== idsDigitados.length) {
+    mostrarErroTime("Você repetiu o mesmo ID em mais de um campo (ou colocou o seu próprio ID, que já entra sozinho). Revise a lista.");
+    return;
+  }
+  if (idsUnicos.length + 1 !== maxIntegrantes) {
+    mostrarErroTime(`O time de ${nomeJogoParticipante(jogoId)} precisa ter exatamente ${maxIntegrantes} pessoas (você + ${maxIntegrantes - 1}).`);
+    return;
+  }
+
+  const btn = document.getElementById("btnCriarTime");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Criando...';
+
+  try {
+    // Confere se os colegas informados existem, estão aprovados e jogam esse jogo
+    // (ou têm Passe TJE). A checagem final e definitiva é feita pelas regras do
+    // Firestore — isso aqui só existe pra dar uma mensagem de erro mais clara.
+    const perfis = await Promise.all(idsUnicos.map(idc => db.collection(COL_PARTICIPANTES_PUBLICOS).doc(idc).get()));
+    for (let i = 0; i < perfis.length; i++) {
+      const p = perfis[i];
+      if (!p.exists) throw new Error(`ID ${idsUnicos[i]} não encontrado. Confira se está correto.`);
+      const pd = p.data();
+      if (pd.jogoId !== jogoId && !pd.possuiPasse) throw new Error(`${idsUnicos[i]} não está inscrito em ${nomeJogoParticipante(jogoId)}.`);
+    }
+
+    const jaEmTime = await Promise.all(idsUnicos.map(idc => db.collection(COL_TIME_MEMBROS).doc(idc).get()));
+    const ocupado = jaEmTime.find(m => m.exists);
+    if (ocupado) throw new Error(`${ocupado.id} já faz parte de outro time.`);
+
+    const timeRef = db.collection(COL_TIMES).doc();
+    const batch = db.batch();
+    batch.set(timeRef, {
+      nome,
+      jogoId,
+      criadorUid: auth.currentUser.uid,
+      criadorIdParticipante: id,
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.set(db.collection(COL_TIME_MEMBROS).doc(id), {
+      timeId: timeRef.id, jogoId, idParticipante: id,
+      nomeCompleto: d.nomeCompleto || "",
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    idsUnicos.forEach((idc, i) => {
+      batch.set(db.collection(COL_TIME_MEMBROS).doc(idc), {
+        timeId: timeRef.id, jogoId, idParticipante: idc,
+        nomeCompleto: perfis[i].data().nomeCompleto || "",
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+    await batch.commit();
+
+    await renderizarTimeExistente(id, { timeId: timeRef.id });
+  } catch (err) {
+    console.error(err);
+    mostrarErroTime(err.message || "Não foi possível criar o time. Tente novamente.");
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "Criar time";
+}
+
+function mostrarErroTime(msg) {
+  const erroBox = document.getElementById("timeErro");
+  erroBox.textContent = msg;
+  erroBox.classList.remove("hidden");
+}
 
 document.getElementById("btnBaixarPdf").addEventListener("click", () => {
   const p = window._participanteAtual;

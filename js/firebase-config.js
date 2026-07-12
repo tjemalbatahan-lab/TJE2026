@@ -39,6 +39,9 @@ const COL_JOGOS = "jogos";
 const COL_INSCRICOES = "inscricoes";
 const COL_ADMINS = "admins";
 const COL_CONTADORES = "contadores";
+const COL_TIMES = "times";
+const COL_TIME_MEMBROS = "time_membros";
+const COL_PARTICIPANTES_PUBLICOS = "participantes_publicos";
 
 const DOMINIO_LOGIN = "participantes.tje2026.app";
 
