@@ -93,7 +93,40 @@
 
           <h3 style="margin-bottom:6px;">Cronograma individual</h3>
           <p style="margin-bottom:16px; font-size:13.5px;">Suas próximas partidas no TJE 2026</p>
-          <div id="listaCronograma"></div>
+          <div id="listaCronograma" style="margin-bottom:34px;"></div>
+
+          <div class="hidden" id="secaoTime">
+            <h3 style="margin-bottom:6px;">Meu Time</h3>
+            <p style="margin-bottom:16px; font-size:13.5px;">Times existem só para Free Fire e CS2.</p>
+
+            <div id="timeInfo" class="hidden form-card" style="max-width:560px;">
+              <h4 id="timeInfoNome" style="margin-bottom:2px;">—</h4>
+              <p style="font-size:13px; margin-bottom:16px;" id="timeInfoJogo">—</p>
+              <div id="timeInfoMembros"></div>
+              <p style="font-size:12.5px; margin-top:16px;">Precisa trocar alguém do time? Fale com a organização do torneio.</p>
+            </div>
+
+            <form id="formCriarTime" class="hidden form-card" style="max-width:560px;">
+              <div class="field hidden" id="campoTimeJogo">
+                <label for="timeSelectJogo">Time para qual jogo?</label>
+                <select id="timeSelectJogo">
+                  <option value="freefire">Free Fire</option>
+                  <option value="cs2">CS2</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="timeInputNome">Nome do time</label>
+                <input type="text" id="timeInputNome" maxlength="60" placeholder="Ex: Malba Squad" required>
+              </div>
+              <div class="field">
+                <label id="labelQtdTime" for="timeIdsContainer">Seu ID já entra automaticamente. Informe o ID dos outros integrantes:</label>
+                <div id="timeIdsContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+                <button type="button" class="btn btn-ghost btn-sm hidden" id="btnAddIdTime" style="margin-top:10px;"><i class="fa-solid fa-plus"></i> Adicionar integrante</button>
+              </div>
+              <div id="timeErro" class="alert alert-error hidden" style="margin-top:6px;"></div>
+              <button type="submit" class="btn btn-primary btn-block" id="btnCriarTime" style="margin-top:16px;">Criar time</button>
+            </form>
+          </div>
         </div>
       </div>
     </section>

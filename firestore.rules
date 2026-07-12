@@ -1,47 +1,81 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
     function ehAdmin() {
       return request.auth != null &&
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-
-    function inscricoesAbertas() {
-      let existeConfig = exists(/databases/$(database)/documents/config/site);
-      return !existeConfig ||
-        !("dataEncerramento" in get(/databases/$(database)/documents/config/site).data) ||
-        request.time < timestamp(get(/databases/$(database)/documents/config/site).data.dataEncerramento);
-    }
-
     match /turmas/{turmaId} {
       allow read: if true;
       allow write: if ehAdmin();
     }
-
     match /jogos/{jogoId} {
       allow read: if true;
       allow write: if ehAdmin();
     }
-
     match /inscricoes/{inscricaoId} {
-      allow create: if inscricoesAbertas();
+      allow create: if true;
       allow read: if request.auth != null &&
         (resource.data.authUid == request.auth.uid || ehAdmin());
       allow update, delete: if ehAdmin();
     }
-
     match /contadores/{docId} {
       allow read, write: if ehAdmin();
+    }
+
+    // Perfil público e mínimo de cada participante aprovado (sem e-mail, telefone
+    // ou comprovante). Usado pelo participante pra validar IDs de colegas na hora
+    // de montar um time, sem precisar de acesso aos dados sensíveis de ninguém.
+    // É todo escrito pelo admin (na aprovação/edição/exclusão da inscrição).
+    match /participantes_publicos/{idParticipante} {
+      allow read: if true;
+      allow write: if ehAdmin();
+    }
+
+    match /times/{timeId} {
+      allow read: if true;
+      allow create: if ehAdmin() || (
+        request.auth != null &&
+        request.resource.data.criadorUid == request.auth.uid &&
+        request.resource.data.jogoId in ['freefire', 'cs2'] &&
+        request.resource.data.nome is string &&
+        request.resource.data.nome.size() > 0 &&
+        request.resource.data.nome.size() <= 60
+      );
+      // Renomear/excluir um time (ou mudar membros dele) só pelo admin — evita que
+      // o próprio participante bagunce a equipe depois de criada.
+      allow update, delete: if ehAdmin();
+    }
+
+    // Documento por participante (id do documento = idParticipante). Ele funciona
+    // como "trava" de uma vaga: como só existe 1 doc por participante, tentar
+    // colocar alguém que já está em outro time vira uma operação de update (não
+    // create), que só o admin pode fazer — por isso a checagem de duplicidade
+    // não precisa de nenhuma lógica extra.
+    match /time_membros/{idParticipante} {
+      allow read: if true;
+      allow create: if ehAdmin() || (
+        request.auth != null &&
+        request.resource.data.timeId is string &&
+        request.resource.data.jogoId in ['freefire', 'cs2'] &&
+        get(/databases/$(database)/documents/times/$(request.resource.data.timeId)).data.criadorUid == request.auth.uid &&
+        get(/databases/$(database)/documents/times/$(request.resource.data.timeId)).data.jogoId == request.resource.data.jogoId &&
+        exists(/databases/$(database)/documents/participantes_publicos/$(idParticipante)) &&
+        (
+          get(/databases/$(database)/documents/participantes_publicos/$(idParticipante)).data.jogoId == request.resource.data.jogoId ||
+          get(/databases/$(database)/documents/participantes_publicos/$(idParticipante)).data.possuiPasse == true
+        )
+      );
+      allow update, delete: if ehAdmin();
     }
 
     match /config/{docId} {
       allow read: if true;
       allow write: if ehAdmin();
     }
-
     match /admins/{adminId} {
-      allow read, write: if false;
+      allow read: if request.auth != null && request.auth.uid == adminId;
+      allow write: if false;
     }
   }
 }

@@ -63,6 +63,7 @@
         <div class="admin-tabs">
           <button class="admin-tab active" data-tab="inscritos">Inscritos</button>
           <button class="admin-tab" data-tab="turmas">Turmas</button>
+          <button class="admin-tab" data-tab="times">Times</button>
           <button class="admin-tab" data-tab="premiacao">Premiação</button>
           <button class="admin-tab" data-tab="configuracoes">Configurações</button>
         </div>
@@ -107,6 +108,27 @@
             <table>
               <thead><tr><th>Turma</th><th>Status</th><th>Inscritos</th><th>Ações</th></tr></thead>
               <tbody id="tabelaTurmas"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-panel hidden" id="painelTimes">
+          <p style="margin-bottom:14px;">Times são só para Free Fire e CS2. O capitão monta a equipe pela Área do Participante colocando o ID dos colegas; aqui você pode acompanhar, corrigir e organizar quem ficou de fora.</p>
+          <button class="btn btn-ghost btn-sm" id="btnSincronizarPerfis" style="margin-bottom:24px;"><i class="fa-solid fa-arrows-rotate"></i> Sincronizar perfis públicos</button>
+
+          <h3 style="margin-bottom:14px;">Times cadastrados</h3>
+          <div class="table-wrap" style="margin-bottom:34px;">
+            <table>
+              <thead><tr><th>Time</th><th>Jogo</th><th>Capitão</th><th>Membros</th><th>Ações</th></tr></thead>
+              <tbody id="tabelaTimes"></tbody>
+            </table>
+          </div>
+
+          <h3 style="margin-bottom:14px;">Participantes sem time</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Nome</th><th>Jogo</th><th>Ações</th></tr></thead>
+              <tbody id="tabelaSemTime"></tbody>
             </table>
           </div>
         </div>
@@ -165,6 +187,15 @@
 
       </div>
     </section>
+  </div>
+
+  <div class="hidden" id="modalVerTime" style="position:fixed; inset:0; background:rgba(8,18,38,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="form-card" style="max-width:460px;">
+      <h3 id="verTimeNome" style="margin-bottom:2px;">—</h3>
+      <p style="font-size:13.5px; margin-bottom:16px;" id="verTimeJogo">—</p>
+      <div id="verTimeMembros" style="margin-bottom:20px;"></div>
+      <button type="button" class="btn btn-ghost btn-block" id="btnFecharVerTime">Fechar</button>
+    </div>
   </div>
 
   <div class="hidden" id="modalEditar" style="position:fixed; inset:0; background:rgba(8,18,38,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
