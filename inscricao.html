@@ -175,6 +175,18 @@
 
     </div>
   </section>
+
+  <!-- POPUP: aviso de que login e senha chegarão por e-mail -->
+  <div class="hidden" id="modalCredenciaisEmail" style="position:fixed; inset:0; background:rgba(8,18,38,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="form-card text-center" style="max-width:420px;">
+      <div style="width:56px; height:56px; border-radius:50%; background:var(--blue-100); color:var(--blue-600); display:flex; align-items:center; justify-content:center; margin:0 auto 18px; font-size:22px;">
+        <i class="fa-solid fa-envelope-circle-check"></i>
+      </div>
+      <h3 style="margin-bottom:10px;">Inscrição registrada!</h3>
+      <p style="color:var(--text-muted); margin-bottom:0;">Assim que a organização confirmar o pagamento, seu <strong>ID de acesso e senha</strong> serão enviados para o e-mail que você cadastrou.</p>
+      <button class="btn btn-primary btn-block mt-24" id="btnFecharModalCredenciaisEmail">Entendi</button>
+    </div>
+  </div>
 </main>
 
 <footer class="site-footer">

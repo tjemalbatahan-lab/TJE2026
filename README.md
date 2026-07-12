@@ -1,4 +1,4 @@
-# TJE 2026 — Torneio de Jogos Escolares
+# TJE 2026 — Torneio de Jogos Eletrônicos
 Colégio Estadual Malba Tahan
 
 Site 100% Firebase: front-end estático (HTML/CSS/JS puro, hospedado no **GitHub Pages**) + **Firestore**, **Firebase Authentication** e uma função HTTP na nuvem como backend. Tudo configurado **pelo navegador** — não precisa instalar nada no computador.
