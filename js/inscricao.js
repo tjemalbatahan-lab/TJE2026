@@ -1,3 +1,16 @@
+(async function verificarInscricoesAbertas() {
+  try {
+    const snap = await db.collection("config").doc("site").get();
+    const dataEncerramento = snap.exists ? snap.data().dataEncerramento : null;
+    if (dataEncerramento && new Date(dataEncerramento) <= new Date()) {
+      document.getElementById("formInscricao").classList.add("hidden");
+      document.getElementById("blocoEncerrado").classList.remove("hidden");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+})();
+
 const inpJogo = document.getElementById("inpJogo");
 CATALOGO_JOGOS.forEach(j => {
   const opt = document.createElement("option");
@@ -19,8 +32,18 @@ function atualizarCardsRadio() {
 radios.forEach(r => r.addEventListener("change", atualizarCardsRadio));
 atualizarCardsRadio();
 
+const radiosForma = document.querySelectorAll('input[name="formaPagamento"]');
+function atualizarCardsForma() {
+  document.getElementById("cardFormaPix").classList.toggle("checked", document.querySelector('input[name="formaPagamento"][value="pix"]').checked);
+  document.getElementById("cardFormaDinheiro").classList.toggle("checked", document.querySelector('input[name="formaPagamento"][value="dinheiro"]').checked);
+}
+radiosForma.forEach(r => r.addEventListener("change", atualizarCardsForma));
+atualizarCardsForma();
+
 const form = document.getElementById("formInscricao");
+const blocoFormaPagamento = document.getElementById("blocoFormaPagamento");
 const blocoPagamento = document.getElementById("blocoPagamento");
+const blocoDinheiro = document.getElementById("blocoDinheiro");
 const blocoEnviado = document.getElementById("blocoEnviado");
 const erroBox = document.getElementById("inscricaoErro");
 
@@ -51,13 +74,49 @@ form.addEventListener("submit", (e) => {
     return;
   }
 
-  document.getElementById("pixValor").textContent = formatarMoeda(valor);
-  document.getElementById("pixQr").src = tipoInscricao === "passe"
-    ? "img/qrcode-passe.png"
-    : "img/qrcode-unitario.png";
-
   form.classList.add("hidden");
-  blocoPagamento.classList.remove("hidden");
+  blocoFormaPagamento.classList.remove("hidden");
+});
+
+document.getElementById("btnConfirmarFormaPagamento").addEventListener("click", async () => {
+  const formaPagamento = document.querySelector('input[name="formaPagamento"]:checked').value;
+  dadosInscricao.formaPagamento = formaPagamento;
+
+  if (formaPagamento === "pix") {
+    document.getElementById("pixValor").textContent = formatarMoeda(dadosInscricao.valor);
+    document.getElementById("pixQr").src = dadosInscricao.tipoInscricao === "passe"
+      ? "img/qrcode-passe.png"
+      : "img/qrcode-unitario.png";
+
+    blocoFormaPagamento.classList.add("hidden");
+    blocoPagamento.classList.remove("hidden");
+    return;
+  }
+
+  const btn = document.getElementById("btnConfirmarFormaPagamento");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Enviando...';
+
+  try {
+    await db.collection(COL_INSCRICOES).add({
+      ...dadosInscricao,
+      statusPagamento: "pendente",
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    blocoFormaPagamento.classList.add("hidden");
+    blocoDinheiro.classList.remove("hidden");
+  } catch (err) {
+    console.error(err);
+    if (err.code === "permission-denied") {
+      blocoFormaPagamento.classList.add("hidden");
+      document.getElementById("blocoEncerrado").classList.remove("hidden");
+    } else {
+      mostrarErro("Não foi possível registrar a inscrição. Tente novamente.");
+    }
+    btn.disabled = false;
+    btn.innerHTML = 'Continuar <i class="fa-solid fa-arrow-right"></i>';
+  }
 });
 
 document.getElementById("formComprovante").addEventListener("submit", async (e) => {
@@ -91,9 +150,15 @@ document.getElementById("formComprovante").addEventListener("submit", async (e) 
     blocoEnviado.classList.remove("hidden");
   } catch (err) {
     console.error(err);
-    mostrarErro("Não foi possível enviar o comprovante. Tente novamente.");
-    btn.disabled = false;
-    btn.innerHTML = 'Enviar comprovante <i class="fa-solid fa-arrow-right"></i>';
+    if (err.code === "permission-denied") {
+      mostrarErro("As inscrições foram encerradas enquanto você preenchia o formulário.");
+      blocoPagamento.classList.add("hidden");
+      document.getElementById("blocoEncerrado").classList.remove("hidden");
+    } else {
+      mostrarErro("Não foi possível enviar o comprovante. Tente novamente.");
+      btn.disabled = false;
+      btn.innerHTML = 'Enviar comprovante <i class="fa-solid fa-arrow-right"></i>';
+    }
   }
 });
 

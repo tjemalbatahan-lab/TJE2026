@@ -110,7 +110,7 @@ function renderizarTabelaInscritos() {
   });
 
   if (!filtrados.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Nenhum inscrito encontrado.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Nenhum inscrito encontrado.</p></div></td></tr>`;
     return;
   }
 
@@ -121,6 +121,7 @@ function renderizarTabelaInscritos() {
       <td>${i.turmaNome || "—"}</td>
       <td>${i.possuiPasse ? "Passe TJE" : (i.jogoNome || "—")}</td>
       <td>${i.possuiPasse ? "Passe" : "Unitário"}</td>
+      <td>${i.formaPagamento === "dinheiro" ? "Dinheiro" : "Pix"}</td>
       <td><span class="status-pill ${i.statusPagamento}">${rotuloStatusAdmin(i.statusPagamento)}</span></td>
       <td>${formatarMoeda(i.valor || 0)}</td>
       <td>${i.comprovantePath ? `<button class="btn btn-ghost btn-sm" data-acao="comprovante" data-id="${i.id}" title="Ver comprovante"><i class="fa-solid fa-receipt"></i></button>` : "—"}</td>
@@ -302,10 +303,11 @@ document.getElementById("btnExportarExcel").addEventListener("click", () => {
     Turma: i.turmaNome || "",
     Jogo: i.possuiPasse ? "Todos (Passe TJE)" : (i.jogoNome || ""),
     Tipo: i.possuiPasse ? "Passe TJE" : "Jogo unitário",
+    "Forma de pagamento": i.formaPagamento === "dinheiro" ? "Dinheiro" : "Pix",
     "Status pagamento": rotuloStatusAdmin(i.statusPagamento),
     "Valor (R$)": i.valor || 0,
     "E-mail": i.email || "",
-    "Telefone do capitão": i.telefoneCapitao || ""
+    "Telefone pessoal": i.telefoneCapitao || ""
   }));
   const ws = XLSX.utils.json_to_sheet(linhas);
   const wb = XLSX.utils.book_new();

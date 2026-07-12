@@ -186,7 +186,7 @@ document.getElementById("btnBaixarPdf").addEventListener("click", () => {
   linha("Valor pago", formatarMoeda(p.valor || 0));
   linha("Status do pagamento", rotuloStatus(p.statusPagamento));
   linha("E-mail", p.email);
-  linha("Telefone do capitão", p.telefoneCapitao);
+  linha("Telefone pessoal", p.telefoneCapitao);
 
   doc.setDrawColor(220, 220, 220);
   doc.line(14, y + 2, 196, y + 2);
