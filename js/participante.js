@@ -16,9 +16,13 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
   btn.innerHTML = '<div class="spinner"></div> Entrando...';
 
   try {
-    await auth.signInWithEmailAndPassword(emailSintetico, senha);
+    await comTimeout(auth.signInWithEmailAndPassword(emailSintetico, senha));
   } catch (err) {
-    erroBox.textContent = "ID ou senha inválidos.";
+    if (err.message === "TIMEOUT_CONEXAO") {
+      erroBox.textContent = "A conexão travou. Recarregue a página e tente novamente.";
+    } else {
+      erroBox.textContent = "ID ou senha inválidos.";
+    }
     erroBox.classList.remove("hidden");
     btn.disabled = false;
     btn.innerHTML = "Entrar";
@@ -38,7 +42,9 @@ auth.onAuthStateChanged(async (user) => {
   const maxTentativas = 3;
   for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
     try {
-      const snap = await db.collection(COL_INSCRICOES).where("authUid", "==", user.uid).limit(1).get();
+      const snap = await comTimeout(
+        db.collection(COL_INSCRICOES).where("authUid", "==", user.uid).limit(1).get()
+      );
       if (snap.empty) throw new Error("Inscrição não encontrada.");
 
       const doc = snap.docs[0];

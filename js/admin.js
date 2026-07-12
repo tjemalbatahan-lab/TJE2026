@@ -14,12 +14,14 @@ document.getElementById("formLoginAdmin").addEventListener("submit", async (e) =
   btn.innerHTML = '<div class="spinner"></div> Entrando...';
 
   try {
-    await auth.signInWithEmailAndPassword(
+    await comTimeout(auth.signInWithEmailAndPassword(
       document.getElementById("adminEmail").value.trim(),
       document.getElementById("adminSenha").value
-    );
+    ));
   } catch (err) {
-    erroBox.textContent = "E-mail ou senha inválidos.";
+    erroBox.textContent = err.message === "TIMEOUT_CONEXAO"
+      ? "A conexão travou. Recarregue a página e tente novamente."
+      : "E-mail ou senha inválidos.";
     erroBox.classList.remove("hidden");
     btn.disabled = false;
     btn.innerHTML = "Entrar";
