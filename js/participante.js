@@ -344,15 +344,24 @@ async function criarTime(e, id, d, jogoAtualFn) {
     const ocupado = jaEmTime.find(m => m.exists);
     if (ocupado) throw new Error(`${ocupado.id} já faz parte de outro time.`);
 
+    // O time precisa ser criado ANTES dos documentos de time_membros, em uma
+    // escrita separada (não no mesmo batch): as regras do Firestore para
+    // criar um time_membros fazem um get() no documento do time pra validar
+    // o criador. Dentro de um único batch, esse get() enxerga o banco como
+    // ele estava ANTES do commit — então o time ainda não existiria do ponto
+    // de vista da regra, e a criação do time_membros seria negada
+    // ("Missing or insufficient permissions"), mesmo estando no mesmo batch
+    // que cria o time.
     const timeRef = db.collection(COL_TIMES).doc();
-    const batch = db.batch();
-    batch.set(timeRef, {
+    await timeRef.set({
       nome,
       jogoId,
       criadorUid: auth.currentUser.uid,
       criadorIdParticipante: id,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    const batch = db.batch();
     batch.set(db.collection(COL_TIME_MEMBROS).doc(id), {
       timeId: timeRef.id, jogoId, idParticipante: id,
       nomeCompleto: d.nomeCompleto || "",
