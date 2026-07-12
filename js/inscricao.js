@@ -106,6 +106,7 @@ document.getElementById("btnConfirmarFormaPagamento").addEventListener("click", 
 
     blocoFormaPagamento.classList.add("hidden");
     blocoDinheiro.classList.remove("hidden");
+    abrirModalCredenciaisEmail();
   } catch (err) {
     console.error(err);
     if (err.code === "permission-denied") {
@@ -148,6 +149,7 @@ document.getElementById("formComprovante").addEventListener("submit", async (e) 
 
     blocoPagamento.classList.add("hidden");
     blocoEnviado.classList.remove("hidden");
+    abrirModalCredenciaisEmail();
   } catch (err) {
     console.error(err);
     if (err.code === "permission-denied") {
@@ -166,6 +168,13 @@ function mostrarErro(msg) {
   erroBox.textContent = msg;
   erroBox.classList.remove("hidden");
 }
+
+function abrirModalCredenciaisEmail() {
+  document.getElementById("modalCredenciaisEmail").classList.remove("hidden");
+}
+document.getElementById("btnFecharModalCredenciaisEmail").addEventListener("click", () => {
+  document.getElementById("modalCredenciaisEmail").classList.add("hidden");
+});
 
 document.addEventListener("click", (e) => {
   if (e.target.closest("#btnCopiarPix")) {

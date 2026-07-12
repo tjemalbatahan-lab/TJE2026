@@ -192,7 +192,7 @@ document.getElementById("btnBaixarPdf").addEventListener("click", () => {
   doc.line(14, y + 2, 196, y + 2);
   doc.setFontSize(9);
   doc.setTextColor(120, 120, 120);
-  doc.text("Colégio Estadual Malba Tahan — Torneio de Jogos Escolares 2026", 14, y + 12);
+  doc.text("Colégio Estadual Malba Tahan — Torneio de Jogos Eletrônicos 2026", 14, y + 12);
   doc.text("Documento gerado eletronicamente pela Área do Participante.", 14, y + 18);
 
   doc.save(`comprovante-${p.id}.pdf`);
