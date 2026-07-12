@@ -35,19 +35,36 @@ auth.onAuthStateChanged(async (user) => {
     return;
   }
 
-  try {
-    const snap = await db.collection(COL_INSCRICOES).where("authUid", "==", user.uid).limit(1).get();
-    if (snap.empty) throw new Error("Inscrição não encontrada.");
-    const doc = snap.docs[0];
-    const d = doc.data();
-    window._inscricaoIdAtual = doc.id;
-    renderizarPainel(d.idParticipante || doc.id, d);
-    telaLogin.classList.add("hidden");
-    telaPainel.classList.remove("hidden");
-    btnSair.classList.remove("hidden");
-  } catch (err) {
-    console.error(err);
-    auth.signOut();
+  const maxTentativas = 3;
+  for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
+    try {
+      const snap = await db.collection(COL_INSCRICOES).where("authUid", "==", user.uid).limit(1).get();
+      if (snap.empty) throw new Error("Inscrição não encontrada.");
+
+      const doc = snap.docs[0];
+      const d = doc.data();
+      window._inscricaoIdAtual = doc.id;
+      renderizarPainel(d.idParticipante || doc.id, d);
+      telaLogin.classList.add("hidden");
+      telaPainel.classList.remove("hidden");
+      btnSair.classList.remove("hidden");
+      return;
+    } catch (err) {
+      console.error(`Tentativa ${tentativa} de carregar a inscrição falhou:`, err);
+
+      if (tentativa < maxTentativas) {
+        // Provável token ainda não propagado ou instabilidade momentânea: força
+        // a renovação do token e tenta de novo antes de desistir.
+        try { await user.getIdToken(true); } catch (_) {}
+        await new Promise(resolve => setTimeout(resolve, 800));
+        continue;
+      }
+
+      const erroBox = document.getElementById("loginErro");
+      erroBox.textContent = "Não foi possível carregar seus dados agora. Tente entrar novamente em instantes.";
+      erroBox.classList.remove("hidden");
+      auth.signOut();
+    }
   }
 });
 
