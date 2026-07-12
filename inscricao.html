@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B1B36">
 <title>Inscrição — TJE 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
@@ -37,15 +38,24 @@
     <div class="container hero-inner">
       <span class="eyebrow"><i class="fa-solid fa-ticket"></i> Inscrição</span>
       <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);">Garanta sua vaga no TJE 2026</h1>
-      <p class="lede">Preencha seus dados, escolha o tipo de inscrição e finalize o pagamento via PIX.</p>
+      <p class="lede">Preencha seus dados, escolha o tipo de inscrição e a forma de pagamento.</p>
     </div>
   </section>
 
   <section class="section">
     <div class="container">
 
+      <div id="blocoEncerrado" class="hidden text-center form-card">
+        <div class="alert alert-error" style="justify-content:center; text-align:left;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>As inscrições para o TJE 2026 já foram encerradas.</span>
+        </div>
+        <p style="color:var(--text-muted); margin-top:12px;">Se você acredita que isso é um engano, entre em contato com a organização do torneio.</p>
+        <a href="index.html" class="btn btn-outline mt-24"><i class="fa-solid fa-arrow-left"></i> Voltar para o início</a>
+      </div>
+
       <form id="formInscricao" class="form-card">
-        <div id="stepIndicator" style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 1 de 2 — Dados da inscrição</div>
+        <div id="stepIndicator" style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 1 de 3 — Dados da inscrição</div>
 
         <div class="field">
           <label for="inpNome">Nome completo</label>
@@ -86,7 +96,7 @@
             <input type="email" id="inpEmail" required placeholder="seuemail@exemplo.com">
           </div>
           <div class="field">
-            <label for="inpTelefone">Telefone do capitão</label>
+            <label for="inpTelefone">Telefone pessoal</label>
             <input type="tel" id="inpTelefone" required placeholder="(00) 00000-0000">
           </div>
         </div>
@@ -98,8 +108,27 @@
         </button>
       </form>
 
+      <div id="blocoFormaPagamento" class="form-card hidden">
+        <div style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 2 de 3 — Forma de pagamento</div>
+        <div class="radio-group">
+          <label class="radio-card" id="cardFormaPix">
+            <input type="radio" name="formaPagamento" value="pix" checked>
+            <span class="rc-title">Pix</span>
+            <span style="font-size:12.5px; color:var(--text-muted);">Pagamento pelo QR Code, com envio do comprovante</span>
+          </label>
+          <label class="radio-card" id="cardFormaDinheiro">
+            <input type="radio" name="formaPagamento" value="dinheiro">
+            <span class="rc-title">Dinheiro</span>
+            <span style="font-size:12.5px; color:var(--text-muted);">Pagamento em espécie, na entrega das cédulas</span>
+          </label>
+        </div>
+        <button type="button" class="btn btn-primary btn-block mt-24" id="btnConfirmarFormaPagamento">
+          Continuar <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
       <div id="blocoPagamento" class="form-card hidden">
-        <div style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 2 de 2 — Pagamento via PIX</div>
+        <div style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 3 de 3 — Pagamento via Pix</div>
 
         <div class="pix-box">
           <p style="margin-bottom:4px;">Valor a pagar</p>
@@ -125,6 +154,15 @@
 
           <div id="pixErro" class="alert alert-error hidden" style="text-align:left; margin-top:16px;"></div>
         </div>
+      </div>
+
+      <div id="blocoDinheiro" class="hidden text-center form-card">
+        <div class="alert alert-info" style="justify-content:center; text-align:left;">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Inscrição em andamento até a entrega das cédulas.</span>
+        </div>
+        <p style="color:var(--text-muted); margin-top:12px;">Sua inscrição foi registrada como pendente. Leve o valor em dinheiro até a organização do TJE 2026 para concluir o pagamento — assim que ele for confirmado, você recebe o ID e a senha de acesso.</p>
+        <a href="area-participante.html" class="btn btn-primary mt-24"><i class="fa-solid fa-user"></i> Ir para a Área do Participante</a>
       </div>
 
       <div id="blocoEnviado" class="hidden text-center">

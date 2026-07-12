@@ -7,33 +7,30 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
-    // Turmas: leitura pública (formulário de inscrição), escrita só admin
+    function inscricoesAbertas() {
+      let existeConfig = exists(/databases/$(database)/documents/config/site);
+      return !existeConfig ||
+        !("dataEncerramento" in get(/databases/$(database)/documents/config/site).data) ||
+        request.time < timestamp(get(/databases/$(database)/documents/config/site).data.dataEncerramento);
+    }
+
     match /turmas/{turmaId} {
       allow read: if true;
       allow write: if ehAdmin();
     }
 
-    // Jogos (campeão / resultado oficial): leitura pública, escrita só admin
     match /jogos/{jogoId} {
       allow read: if true;
       allow write: if ehAdmin();
     }
 
-    // Inscrições:
-    // - criação: pública (o próprio formulário cria como "pendente")
-    // - leitura: o dono (authUid == uid logado, atribuído na aprovação) ou admin
-    // - atualização: admin (aprovação, edição) — o participante nunca edita
-    //   direto a própria inscrição
-    // - remoção: só admin
     match /inscricoes/{inscricaoId} {
-      allow create: if true;
+      allow create: if inscricoesAbertas();
       allow read: if request.auth != null &&
         (resource.data.authUid == request.auth.uid || ehAdmin());
       allow update, delete: if ehAdmin();
     }
 
-    // Contador interno do ID do participante (TJE2026-0001, ...):
-    // só admin lê/escreve, dentro da transação de aprovação
     match /contadores/{docId} {
       allow read, write: if ehAdmin();
     }
@@ -43,8 +40,6 @@ service cloud.firestore {
       allow write: if ehAdmin();
     }
 
-    // Lista de administradores: ninguém lê/escreve pelo cliente
-    // (edite manualmente pelo Console do Firebase)
     match /admins/{adminId} {
       allow read, write: if false;
     }
