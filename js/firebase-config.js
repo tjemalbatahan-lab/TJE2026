@@ -11,7 +11,6 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 const auth = firebase.auth();
-const storage = firebase.storage();
 
 const appAuxiliar = firebase.initializeApp(firebaseConfig, "auxiliar");
 const authAuxiliar = appAuxiliar.auth();
@@ -21,7 +20,5 @@ const COL_JOGOS = "jogos";
 const COL_INSCRICOES = "inscricoes";
 const COL_ADMINS = "admins";
 const COL_CONTADORES = "contadores";
-
-const PASTA_COMPROVANTES = "comprovantes";
 
 const DOMINIO_LOGIN = "participantes.tje2026.app";

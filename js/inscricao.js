@@ -1,3 +1,5 @@
+let pixConfigAtual = PIX_CONFIG;
+
 (async function verificarInscricoesAbertas() {
   try {
     const snap = await db.collection("config").doc("site").get();
@@ -5,6 +7,9 @@
     if (dataEncerramento && new Date(dataEncerramento) <= new Date()) {
       document.getElementById("formInscricao").classList.add("hidden");
       document.getElementById("blocoEncerrado").classList.remove("hidden");
+    }
+    if (snap.exists && snap.data().pix) {
+      pixConfigAtual = snap.data().pix;
     }
   } catch (err) {
     console.error(err);
@@ -84,9 +89,23 @@ document.getElementById("btnConfirmarFormaPagamento").addEventListener("click", 
 
   if (formaPagamento === "pix") {
     document.getElementById("pixValor").textContent = formatarMoeda(dadosInscricao.valor);
-    document.getElementById("pixQr").src = dadosInscricao.tipoInscricao === "passe"
-      ? "img/qrcode-passe.png"
-      : "img/qrcode-unitario.png";
+
+    const payloadPix = montarPayloadPix({
+      chave: pixConfigAtual.chave,
+      nomeRecebedor: pixConfigAtual.nomeRecebedor,
+      cidade: pixConfigAtual.cidade,
+      valor: dadosInscricao.valor,
+      txid: dadosInscricao.tipoInscricao === "passe" ? "TJE2026PASSE" : "TJE2026JOGO"
+    });
+
+    document.getElementById("pixCopiaCola").value = payloadPix;
+
+    try {
+      document.getElementById("pixQr").src = await gerarQrCodePixDataUrl(payloadPix);
+    } catch (err) {
+      console.error(err);
+      mostrarErro("Não foi possível gerar o QR Code. Use o Pix Copia e Cola abaixo.");
+    }
 
     blocoFormaPagamento.classList.add("hidden");
     blocoPagamento.classList.remove("hidden");
@@ -120,6 +139,49 @@ document.getElementById("btnConfirmarFormaPagamento").addEventListener("click", 
   }
 });
 
+function comprimirImagem(arquivo) {
+  return new Promise((resolve, reject) => {
+    const leitor = new FileReader();
+    leitor.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let largura = img.width;
+        let altura = img.height;
+        const larguraMax = 1280;
+        if (largura > larguraMax) {
+          altura = Math.round(altura * (larguraMax / largura));
+          largura = larguraMax;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = largura;
+        canvas.height = altura;
+        canvas.getContext("2d").drawImage(img, 0, 0, largura, altura);
+
+        let qualidade = 0.82;
+        let dataUrl = canvas.toDataURL("image/jpeg", qualidade);
+
+        // Reduz a qualidade até caber num tamanho seguro pro Firestore (limite de 1MB por documento)
+        while (dataUrl.length > 700000 && qualidade > 0.3) {
+          qualidade -= 0.1;
+          dataUrl = canvas.toDataURL("image/jpeg", qualidade);
+        }
+
+        if (dataUrl.length > 900000) {
+          reject(new Error("A imagem é muito grande, mesmo depois de compactada. Tente enviar um print com menos resolução."));
+          return;
+        }
+
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("Não foi possível ler a imagem selecionada."));
+      img.src = e.target.result;
+    };
+    leitor.onerror = () => reject(new Error("Não foi possível ler o arquivo selecionado."));
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
 document.getElementById("formComprovante").addEventListener("submit", async (e) => {
   e.preventDefault();
   erroBox.classList.add("hidden");
@@ -129,23 +191,24 @@ document.getElementById("formComprovante").addEventListener("submit", async (e) 
     mostrarErro("Selecione o comprovante do pagamento.");
     return;
   }
+  if (!arquivo.type.startsWith("image/")) {
+    mostrarErro("Envie uma imagem do comprovante (print ou foto). PDF não é aceito.");
+    return;
+  }
 
   const btn = document.getElementById("btnEnviarComprovante");
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Enviando...';
 
   try {
-    const ref = await db.collection(COL_INSCRICOES).add({
+    const comprovanteBase64 = await comprimirImagem(arquivo);
+
+    await db.collection(COL_INSCRICOES).add({
       ...dadosInscricao,
       statusPagamento: "pendente",
+      comprovanteBase64,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
-
-    const extensao = arquivo.name.split(".").pop();
-    const caminho = `${PASTA_COMPROVANTES}/${ref.id}.${extensao}`;
-    await storage.ref(caminho).put(arquivo);
-
-    await ref.update({ comprovantePath: caminho });
 
     blocoPagamento.classList.add("hidden");
     blocoEnviado.classList.remove("hidden");
@@ -157,7 +220,7 @@ document.getElementById("formComprovante").addEventListener("submit", async (e) 
       blocoPagamento.classList.add("hidden");
       document.getElementById("blocoEncerrado").classList.remove("hidden");
     } else {
-      mostrarErro("Não foi possível enviar o comprovante. Tente novamente.");
+      mostrarErro(err.message || "Não foi possível enviar o comprovante. Tente novamente.");
       btn.disabled = false;
       btn.innerHTML = 'Enviar comprovante <i class="fa-solid fa-arrow-right"></i>';
     }

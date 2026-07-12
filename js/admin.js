@@ -124,7 +124,7 @@ function renderizarTabelaInscritos() {
       <td>${i.formaPagamento === "dinheiro" ? "Dinheiro" : "Pix"}</td>
       <td><span class="status-pill ${i.statusPagamento}">${rotuloStatusAdmin(i.statusPagamento)}</span></td>
       <td>${formatarMoeda(i.valor || 0)}</td>
-      <td>${i.comprovantePath ? `<button class="btn btn-ghost btn-sm" data-acao="comprovante" data-id="${i.id}" title="Ver comprovante"><i class="fa-solid fa-receipt"></i></button>` : "—"}</td>
+      <td>${i.comprovanteBase64 ? `<button class="btn btn-ghost btn-sm" data-acao="comprovante" data-id="${i.id}" title="Ver comprovante"><i class="fa-solid fa-receipt"></i></button>` : "—"}</td>
       <td>
         <div class="table-actions">
           ${i.statusPagamento !== "aprovado" ? `<button class="btn btn-ghost btn-sm" data-acao="confirmar" data-id="${i.id}" title="Confirmar pagamento"><i class="fa-solid fa-check"></i></button>` : ""}
@@ -240,9 +240,12 @@ document.getElementById("tabelaInscritos").addEventListener("click", async (e) =
 
   if (btn.dataset.acao === "comprovante") {
     try {
-      const url = await storage.ref(item.comprovantePath).getDownloadURL();
+      const resposta = await fetch(item.comprovanteBase64);
+      const blob = await resposta.blob();
+      const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch (err) {
+      console.error(err);
       alert("Não foi possível abrir o comprovante.");
     }
   }
@@ -428,6 +431,12 @@ async function carregarConfiguracoes() {
       const iso = doc.data().dataEncerramento;
       input.value = iso.slice(0, 16);
     }
+    if (doc.exists && doc.data().pix) {
+      const pix = doc.data().pix;
+      document.getElementById("inputPixChave").value = pix.chave || "";
+      document.getElementById("inputPixNome").value = pix.nomeRecebedor || "";
+      document.getElementById("inputPixCidade").value = pix.cidade || "";
+    }
   } catch (err) {
     console.error(err);
   }
@@ -449,6 +458,29 @@ document.getElementById("formConfiguracoes")?.addEventListener("submit", async (
   } catch (err) {
     console.error(err);
     alert("Não foi possível salvar a configuração.");
+  }
+  btn.disabled = false;
+});
+
+document.getElementById("formConfigPix")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const chave = document.getElementById("inputPixChave").value.trim();
+  const nomeRecebedor = document.getElementById("inputPixNome").value.trim();
+  const cidade = document.getElementById("inputPixCidade").value.trim();
+  if (!chave || !nomeRecebedor || !cidade) return;
+
+  const btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true;
+  try {
+    await db.collection("config").doc("site").set({
+      pix: { chave, nomeRecebedor, cidade }
+    }, { merge: true });
+    const original = btn.textContent;
+    btn.textContent = "Salvo!";
+    setTimeout(() => (btn.textContent = original), 1500);
+  } catch (err) {
+    console.error(err);
+    alert("Não foi possível salvar a chave Pix.");
   }
   btn.disabled = false;
 });
