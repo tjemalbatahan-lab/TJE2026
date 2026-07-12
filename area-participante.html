@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área do Participante — TJE 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav container">
+    <a href="index.html" class="nav-brand">
+      <span class="brand-badge">TJE</span>
+      <span class="brand-text"><strong>TJE 2026</strong><span>Colégio Malba Tahan</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="jogos.html">Jogos</a></li>
+      <li><a href="premiacao.html">Premiação</a></li>
+      <li><a href="regulamento.html">Regulamento</a></li>
+      <li><a href="area-participante.html">Área do Participante</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm hidden" id="btnSair">Sair</button>
+      <button class="icon-btn nav-toggle" id="navToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <!-- TELA DE LOGIN -->
+  <div class="login-wrap" id="telaLogin">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="brand-badge" style="margin:0 auto 14px; display:flex;">TJE</span>
+        <h2 style="margin-bottom:4px;">Área do Participante</h2>
+        <p style="margin:0;">Entre com seu ID e senha para ver seus dados</p>
+      </div>
+      <form id="formLogin" class="form-card">
+        <div class="field">
+          <label for="loginId">ID do participante</label>
+          <input type="text" id="loginId" placeholder="TJE2026-0001" required>
+        </div>
+        <div class="field">
+          <label for="loginSenha">Senha</label>
+          <input type="password" id="loginSenha" placeholder="Digite sua senha" required>
+        </div>
+        <div id="loginErro" class="alert alert-error hidden"></div>
+        <button type="submit" class="btn btn-primary btn-block" id="btnLogin">Entrar</button>
+      </form>
+      <p class="text-center" style="font-size:13px; margin-top:16px;">Ainda não se inscreveu? <a href="inscricao.html" style="color:var(--blue-600); font-weight:600;">Fazer inscrição</a></p>
+    </div>
+  </div>
+
+  <!-- PAINEL DO PARTICIPANTE -->
+  <div class="hidden" id="telaPainel">
+    <section class="hero" style="padding-bottom:56px;">
+      <div class="container hero-inner" style="max-width:none;">
+        <span class="eyebrow"><i class="fa-solid fa-user"></i> Área do Participante</span>
+        <h1 style="font-size:clamp(1.7rem,4vw,2.2rem);">Olá, <span id="saudacaoNome">participante</span> 👋</h1>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container dash-grid">
+        <aside class="dash-sidebar">
+          <div class="dash-avatar" id="avatarIniciais">--</div>
+          <h3 id="painelNome" style="margin-bottom:2px;">—</h3>
+          <p style="font-size:13px; margin-bottom:14px;" id="painelTurma">—</p>
+          <span class="status-pill" id="painelStatus">—</span>
+
+          <div style="margin-top:26px; display:flex; flex-direction:column; gap:10px;">
+            <button class="btn btn-ghost btn-block btn-sm" id="btnAlterarSenha"><i class="fa-solid fa-key"></i> Alterar senha</button>
+            <button class="btn btn-primary btn-block btn-sm" id="btnBaixarPdf"><i class="fa-solid fa-file-pdf"></i> Baixar comprovante</button>
+          </div>
+        </aside>
+
+        <div>
+          <div class="info-grid">
+            <div class="info-tile"><div class="it-label">ID do participante</div><div class="it-value" id="infoId">—</div></div>
+            <div class="info-tile"><div class="it-label">Turma</div><div class="it-value" id="infoTurma">—</div></div>
+            <div class="info-tile"><div class="it-label">Passe TJE</div><div class="it-value" id="infoPasse">—</div></div>
+            <div class="info-tile"><div class="it-label">Status do pagamento</div><div class="it-value" id="infoStatus">—</div></div>
+          </div>
+
+          <h3 style="margin-bottom:14px;">Jogos inscritos</h3>
+          <div id="listaJogosInscritos" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:34px;"></div>
+
+          <h3 style="margin-bottom:6px;">Cronograma individual</h3>
+          <p style="margin-bottom:16px; font-size:13.5px;">Suas próximas partidas no TJE 2026</p>
+          <div id="listaCronograma"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL ALTERAR SENHA -->
+  <div class="hidden" id="modalSenha" style="position:fixed; inset:0; background:rgba(8,18,38,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="form-card" style="max-width:420px;">
+      <h3>Alterar senha</h3>
+      <form id="formAlterarSenha">
+        <div class="field">
+          <label for="senhaAtual">Senha atual</label>
+          <input type="password" id="senhaAtual" required>
+        </div>
+        <div class="field">
+          <label for="senhaNova">Nova senha</label>
+          <input type="password" id="senhaNova" required minlength="6">
+        </div>
+        <div id="senhaErro" class="alert alert-error hidden"></div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-ghost btn-block" id="btnFecharModalSenha">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">© <span class="footer-year"></span> TJE 2026 · Colégio Estadual Malba Tahan.</div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/jogos-data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/participante.js"></script>
+</body>
+</html>

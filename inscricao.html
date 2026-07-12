@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscrição — TJE 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav container">
+    <a href="index.html" class="nav-brand">
+      <span class="brand-badge">TJE</span>
+      <span class="brand-text"><strong>TJE 2026</strong><span>Colégio Malba Tahan</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="jogos.html">Jogos</a></li>
+      <li><a href="premiacao.html">Premiação</a></li>
+      <li><a href="regulamento.html">Regulamento</a></li>
+      <li><a href="area-participante.html">Área do Participante</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="area-participante.html" class="btn btn-outline btn-sm">Área do Participante</a>
+      <button class="icon-btn nav-toggle" id="navToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom:56px;">
+    <div class="container hero-inner">
+      <span class="eyebrow"><i class="fa-solid fa-ticket"></i> Inscrição</span>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);">Garanta sua vaga no TJE 2026</h1>
+      <p class="lede">Preencha seus dados, escolha o tipo de inscrição e finalize o pagamento via PIX.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+
+      <!-- ETAPA 1: FORMULÁRIO -->
+      <form id="formInscricao" class="form-card">
+        <div id="stepIndicator" style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 1 de 2 — Dados da inscrição</div>
+
+        <div class="field">
+          <label for="inpNome">Nome completo</label>
+          <input type="text" id="inpNome" required placeholder="Digite seu nome completo">
+        </div>
+
+        <div class="field">
+          <label for="turmaSelect">Turma</label>
+          <select id="turmaSelect" required></select>
+        </div>
+
+        <div class="field">
+          <label for="inpJogo">Jogo escolhido</label>
+          <select id="inpJogo" required>
+            <option value="" disabled selected>Selecione o jogo</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Tipo de inscrição</label>
+          <div class="radio-group">
+            <label class="radio-card" id="cardUnico">
+              <input type="radio" name="tipoInscricao" value="unico" checked>
+              <span class="rc-title">Jogo unitário <span class="rc-price">R$ 6,00</span></span>
+              <span style="font-size:12.5px; color:var(--text-muted);">Acesso a 1 modalidade</span>
+            </label>
+            <label class="radio-card" id="cardPasse">
+              <input type="radio" name="tipoInscricao" value="passe">
+              <span class="rc-title">Passe TJE <span class="rc-price-old">R$ 14,90</span><span class="rc-price">R$ 11,90</span></span>
+              <span style="font-size:12.5px; color:var(--text-muted);"><i class="fa-solid fa-crown" style="color:var(--gold-500);"></i> Todos os jogos · promoção</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="inpEmail">E-mail</label>
+            <input type="email" id="inpEmail" required placeholder="seuemail@exemplo.com">
+          </div>
+          <div class="field">
+            <label for="inpTelefone">Telefone do capitão</label>
+            <input type="tel" id="inpTelefone" required placeholder="(00) 00000-0000">
+          </div>
+        </div>
+
+        <div id="inscricaoErro" class="alert alert-error hidden"></div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="btnIrPagamento">
+          Ir para o pagamento <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- ETAPA 2: PAGAMENTO PIX (QR fixo) + COMPROVANTE -->
+      <div id="blocoPagamento" class="form-card hidden">
+        <div style="margin-bottom:24px; font-size:12.5px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Etapa 2 de 2 — Pagamento via PIX</div>
+
+        <div class="pix-box">
+          <p style="margin-bottom:4px;">Valor a pagar</p>
+          <h2 id="pixValor" style="margin-bottom:20px;">R$ 0,00</h2>
+
+          <img id="pixQr" class="pix-qr" src="" alt="QR Code PIX">
+          <p style="font-size:13px;">Escaneie o QR Code no app do seu banco para pagar</p>
+
+          <div class="alert alert-info" style="margin-top:20px; text-align:left;">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Depois de pagar, anexe o comprovante abaixo. Sua inscrição fica "pendente" até o administrador conferir e aprovar — você recebe o ID e a senha de acesso assim que for aprovado.</span>
+          </div>
+
+          <form id="formComprovante" style="margin-top:22px; text-align:left;">
+            <div class="field">
+              <label for="inpComprovante">Comprovante do pagamento (imagem ou PDF)</label>
+              <input type="file" id="inpComprovante" accept="image/*,application/pdf" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="btnEnviarComprovante">
+              Enviar comprovante <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </form>
+
+          <div id="pixErro" class="alert alert-error hidden" style="text-align:left; margin-top:16px;"></div>
+        </div>
+      </div>
+
+      <!-- ETAPA 3: ENVIADO, AGUARDANDO APROVAÇÃO -->
+      <div id="blocoEnviado" class="hidden text-center">
+        <div class="alert alert-success" style="max-width:460px; margin:0 auto 22px; justify-content:center;">
+          <i class="fa-solid fa-circle-check"></i> Comprovante enviado! Sua inscrição está pendente de aprovação.
+        </div>
+        <p style="color:var(--text-muted); max-width:460px; margin:0 auto;">O administrador vai conferir o pagamento e liberar seu acesso. Você vai receber o ID e a senha por e-mail ou WhatsApp.</p>
+        <a href="area-participante.html" class="btn btn-primary mt-24"><i class="fa-solid fa-user"></i> Ir para a Área do Participante</a>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">© <span class="footer-year"></span> TJE 2026 · Colégio Estadual Malba Tahan.</div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/jogos-data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/turmas.js"></script>
+<script src="js/inscricao.js"></script>
+</body>
+</html>

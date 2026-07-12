@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premiação — TJE 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav container">
+    <a href="index.html" class="nav-brand">
+      <span class="brand-badge">TJE</span>
+      <span class="brand-text"><strong>TJE 2026</strong><span>Colégio Malba Tahan</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="jogos.html">Jogos</a></li>
+      <li><a href="premiacao.html">Premiação</a></li>
+      <li><a href="regulamento.html">Regulamento</a></li>
+      <li><a href="area-participante.html">Área do Participante</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="area-participante.html" class="btn btn-outline btn-sm">Área do Participante</a>
+      <button class="icon-btn nav-toggle" id="navToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom:56px;">
+    <div class="container hero-inner">
+      <span class="eyebrow"><i class="fa-solid fa-trophy"></i> Resultados oficiais</span>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);">Premiação</h1>
+      <p class="lede">Selecione uma modalidade para ver o campeão oficial do TJE 2026.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="form-card" style="max-width:520px; margin-bottom:40px;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="seletorJogo">Selecione o jogo</label>
+          <select id="seletorJogo">
+            <option value="" disabled selected>Escolha uma modalidade</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="champWrap"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TJE 2026</h4>
+        <p style="font-size:13.5px;">Torneio de Jogos Escolares do Colégio Estadual Malba Tahan.</p>
+      </div>
+      <div>
+        <h4>Navegação</h4>
+        <a href="jogos.html">Jogos</a>
+        <a href="regulamento.html">Regulamento</a>
+      </div>
+      <div>
+        <h4>Acesso</h4>
+        <a href="inscricao.html">Fazer inscrição</a>
+        <a href="area-participante.html">Área do Participante</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span class="footer-year"></span> TJE 2026 · Colégio Estadual Malba Tahan.</div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/jogos-data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/premiacao.js"></script>
+</body>
+</html>

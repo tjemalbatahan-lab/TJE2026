@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TJE 2026 — Torneio de Jogos Escolares | Colégio Estadual Malba Tahan</title>
+<meta name="description" content="Garanta sua vaga no TJE 2026, o Torneio de Jogos Escolares do Colégio Estadual Malba Tahan. CS2, Free Fire, Brawl Stars, League of Legends e EA Sports FC.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav container">
+    <a href="index.html" class="nav-brand">
+      <span class="brand-badge">TJE</span>
+      <span class="brand-text"><strong>TJE 2026</strong><span>Colégio Malba Tahan</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="jogos.html">Jogos</a></li>
+      <li><a href="premiacao.html">Premiação</a></li>
+      <li><a href="regulamento.html">Regulamento</a></li>
+      <li><a href="area-participante.html">Área do Participante</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="area-participante.html" class="btn btn-outline btn-sm">Área do Participante</a>
+      <button class="icon-btn nav-toggle" id="navToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container hero-inner">
+      <span class="eyebrow"><i class="fa-solid fa-trophy"></i> Edição 2026</span>
+      <h1>TJE 2026 — Torneio de Jogos Escolares</h1>
+      <p class="subtitle">Colégio Estadual Malba Tahan</p>
+      <p class="lede">Garanta sua participação antes do encerramento das inscrições.</p>
+
+      <div class="countdown" id="countdownBox">
+        <div class="unit"><div class="num" id="cd-dias">00</div><div class="label">Dias</div></div>
+        <div class="unit"><div class="num" id="cd-horas">00</div><div class="label">Horas</div></div>
+        <div class="unit"><div class="num" id="cd-min">00</div><div class="label">Minutos</div></div>
+        <div class="unit"><div class="num" id="cd-seg">00</div><div class="label">Segundos</div></div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="inscricao.html" class="btn btn-primary" id="btnGarantirVaga"><i class="fa-solid fa-ticket"></i> Garantir minha vaga</a>
+        <a href="area-participante.html" class="btn btn-outline"><i class="fa-solid fa-user"></i> Área do Participante</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="valores">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Inscrições</span>
+        <h2>Escolha a melhor forma de participar</h2>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-icon"><i class="fa-solid fa-gamepad"></i></div>
+          <h3>Jogo unitário</h3>
+          <p class="price-note">Inscrição para apenas um jogo à sua escolha.</p>
+          <div class="price-value">R$ 6,00</div>
+          <ul>
+            <li><i class="fa-solid fa-circle-check"></i> Acesso a 1 modalidade</li>
+            <li><i class="fa-solid fa-circle-check"></i> ID e senha pessoais</li>
+            <li><i class="fa-solid fa-circle-check"></i> Cronograma individual</li>
+          </ul>
+          <a href="inscricao.html?tipo=unico" class="btn btn-ghost btn-block">Inscrever-se</a>
+        </div>
+
+        <div class="price-card featured">
+          <span class="badge-bestseller"><i class="fa-solid fa-crown"></i> Mais vendido</span>
+          <div class="price-icon"><i class="fa-solid fa-crown"></i></div>
+          <h3>Passe TJE</h3>
+          <p class="price-note">Melhor custo-benefício — acesso a todos os jogos.</p>
+          <div class="promo-tag"><i class="fa-solid fa-tag"></i> Promoção por tempo limitado</div>
+          <div class="price-value"><span class="price-old">R$ 14,90</span> R$ 11,90</div>
+          <div class="savings-tag"><i class="fa-solid fa-piggy-bank"></i> Economize até R$ 18,10 participando de todos os jogos</div>
+          <ul>
+            <li><i class="fa-solid fa-circle-check"></i> Acesso às 5 modalidades</li>
+            <li><i class="fa-solid fa-circle-check"></i> ID e senha pessoais</li>
+            <li><i class="fa-solid fa-circle-check"></i> Cronograma individual completo</li>
+            <li><i class="fa-solid fa-circle-check"></i> Prioridade em desempates de mesa</li>
+          </ul>
+          <a href="inscricao.html?tipo=passe" class="btn btn-primary btn-block">Quero o Passe TJE</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="jogos">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Modalidades</span>
+        <h2>Jogos disponíveis</h2>
+      </div>
+      <div class="games-grid" id="gamesGridHome"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container text-center">
+      <div class="section-head" style="margin-bottom:26px;">
+        <span class="kicker">Pronto para competir?</span>
+        <h2>As vagas são limitadas por turma</h2>
+      </div>
+      <a href="inscricao.html" class="btn btn-primary"><i class="fa-solid fa-ticket"></i> Garantir minha vaga</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TJE 2026</h4>
+        <p style="font-size:13.5px;">Torneio de Jogos Escolares do Colégio Estadual Malba Tahan. Competição, respeito e diversão dentro da escola.</p>
+      </div>
+      <div>
+        <h4>Navegação</h4>
+        <a href="jogos.html">Jogos</a>
+        <a href="premiacao.html">Premiação</a>
+        <a href="regulamento.html">Regulamento</a>
+      </div>
+      <div>
+        <h4>Acesso</h4>
+        <a href="inscricao.html">Fazer inscrição</a>
+        <a href="area-participante.html">Área do Participante</a>
+        <a href="admin.html">Painel administrativo</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span class="footer-year"></span> TJE 2026 · Colégio Estadual Malba Tahan. Todos os direitos reservados.</div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/jogos-data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/countdown.js"></script>
+<script>
+  const grid = document.getElementById("gamesGridHome");
+  CATALOGO_JOGOS.forEach(j => {
+    grid.insertAdjacentHTML("beforeend", `
+      <div class="game-card">
+        <div class="game-icon"><i class="fa-solid ${j.icone}"></i></div>
+        <h4>${j.nome}</h4>
+        <p>Inscrições abertas</p>
+      </div>
+    `);
+  });
+</script>
+</body>
+</html>

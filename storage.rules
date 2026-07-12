@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function ehAdmin() {
+      return request.auth != null &&
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // Comprovantes de pagamento:
+    // - upload: público (o participante ainda não tem login nessa hora)
+    // - leitura: só admin (é quem confere e aprova)
+    match /comprovantes/{arquivo} {
+      allow write: if request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf');
+      allow read: if ehAdmin();
+    }
+  }
+}

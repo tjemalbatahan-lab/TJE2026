@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regulamento — TJE 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav container">
+    <a href="index.html" class="nav-brand">
+      <span class="brand-badge">TJE</span>
+      <span class="brand-text"><strong>TJE 2026</strong><span>Colégio Malba Tahan</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Início</a></li>
+      <li><a href="jogos.html">Jogos</a></li>
+      <li><a href="premiacao.html">Premiação</a></li>
+      <li><a href="regulamento.html">Regulamento</a></li>
+      <li><a href="area-participante.html">Área do Participante</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="area-participante.html" class="btn btn-outline btn-sm">Área do Participante</a>
+      <button class="icon-btn nav-toggle" id="navToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom:56px;">
+    <div class="container hero-inner">
+      <span class="eyebrow"><i class="fa-solid fa-file-lines"></i> Regras oficiais</span>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);">Regulamento</h1>
+      <p class="lede">Leia com atenção antes de se inscrever no TJE 2026.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container reg-block">
+      <h3>1. Das inscrições</h3>
+      <ul>
+        <li>A inscrição só é confirmada após a aprovação do pagamento via PIX.</li>
+        <li>É permitida a inscrição em modalidade única (R$ 6,00) ou no Passe TJE (R$ 14,90), que dá acesso a todos os jogos.</li>
+        <li>Cada aluno deve se inscrever com dados verdadeiros: nome completo, turma e contato do capitão.</li>
+        <li>As vagas são limitadas por turma e por modalidade, respeitando a ordem de confirmação do pagamento.</li>
+      </ul>
+
+      <h3>2. Das credenciais de acesso</h3>
+      <ul>
+        <li>Após o pagamento aprovado, o participante recebe um ID no formato <strong>TJE2026-0001</strong> e uma senha provisória.</li>
+        <li>As credenciais também são enviadas por e-mail e podem ser alteradas na Área do Participante.</li>
+        <li>O participante é responsável por manter suas credenciais em sigilo.</li>
+      </ul>
+
+      <h3>3. Da participação</h3>
+      <ol>
+        <li>O participante deve consultar seu cronograma individual na Área do Participante.</li>
+        <li>Atrasos superiores a 10 minutos podem resultar em W.O. (walkover).</li>
+        <li>Comportamento antidesportivo, uso de programas ilícitos ou qualquer forma de trapaça resulta em desclassificação imediata.</li>
+        <li>Decisões da organização e dos árbitros de mesa são soberanas.</li>
+      </ol>
+
+      <h3>4. Da premiação</h3>
+      <ul>
+        <li>Cada modalidade tem uma equipe campeã e um "Melhor Jogador", divulgados na página de Premiação após a validação oficial do resultado.</li>
+        <li>Não há divulgação de colocações além do campeão.</li>
+      </ul>
+
+      <h3>5. Do pagamento e reembolso</h3>
+      <ul>
+        <li>O pagamento é processado via Mercado Pago (PIX), com confirmação automática.</li>
+        <li>Em caso de cancelamento do torneio pela organização, o valor será integralmente reembolsado.</li>
+        <li>Inscrições canceladas pelo próprio participante não são reembolsáveis após confirmação do pagamento.</li>
+      </ul>
+
+      <h3>6. Disposições gerais</h3>
+      <p style="color:var(--text-muted); font-size:14.5px;">A organização do TJE 2026 reserva-se o direito de alterar datas, horários e regras a qualquer momento, comunicando as mudanças na Área do Participante e por e-mail.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TJE 2026</h4>
+        <p style="font-size:13.5px;">Torneio de Jogos Escolares do Colégio Estadual Malba Tahan.</p>
+      </div>
+      <div>
+        <h4>Navegação</h4>
+        <a href="jogos.html">Jogos</a>
+        <a href="premiacao.html">Premiação</a>
+      </div>
+      <div>
+        <h4>Acesso</h4>
+        <a href="inscricao.html">Fazer inscrição</a>
+        <a href="area-participante.html">Área do Participante</a>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span class="footer-year"></span> TJE 2026 · Colégio Estadual Malba Tahan.</div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

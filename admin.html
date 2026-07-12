@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo — TJE 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav container">
+    <a href="index.html" class="nav-brand">
+      <span class="brand-badge">TJE</span>
+      <span class="brand-text"><strong>TJE 2026</strong><span>Painel Administrativo</span></span>
+    </a>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm hidden" id="btnSairAdmin">Sair</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <!-- LOGIN ADMIN -->
+  <div class="login-wrap" id="telaLoginAdmin">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="brand-badge" style="margin:0 auto 14px; display:flex;"><i class="fa-solid fa-lock"></i></span>
+        <h2 style="margin-bottom:4px;">Acesso restrito</h2>
+        <p style="margin:0;">Painel administrativo do TJE 2026</p>
+      </div>
+      <form id="formLoginAdmin" class="form-card">
+        <div class="field">
+          <label for="adminEmail">E-mail</label>
+          <input type="email" id="adminEmail" required>
+        </div>
+        <div class="field">
+          <label for="adminSenha">Senha</label>
+          <input type="password" id="adminSenha" required>
+        </div>
+        <div id="adminLoginErro" class="alert alert-error hidden"></div>
+        <button type="submit" class="btn btn-primary btn-block" id="btnAdminLogin">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PAINEL -->
+  <div class="hidden" id="telaAdmin">
+    <section class="section" style="padding-top:calc(var(--header-h) + 32px);">
+      <div class="container">
+
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Inscritos</div></div>
+          <div class="stat-card"><div class="stat-num" id="statAprovados">0</div><div class="stat-label">Pagamentos aprovados</div></div>
+          <div class="stat-card"><div class="stat-num" id="statPendentes">0</div><div class="stat-label">Pagamentos pendentes</div></div>
+          <div class="stat-card"><div class="stat-num" id="statReceita">R$ 0,00</div><div class="stat-label">Receita confirmada</div></div>
+        </div>
+
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="inscritos">Inscritos</button>
+          <button class="admin-tab" data-tab="turmas">Turmas</button>
+          <button class="admin-tab" data-tab="premiacao">Premiação</button>
+        </div>
+
+        <!-- ABA INSCRITOS -->
+        <div class="admin-panel" id="painelInscritos">
+          <div style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="filtroBusca" placeholder="Buscar por nome, ID ou e-mail" style="flex:1; min-width:220px; padding:11px 14px; border:1px solid var(--border); border-radius:9px; background:var(--bg-elevated); color:var(--text);">
+            <select id="filtroStatus" style="padding:11px 14px; border:1px solid var(--border); border-radius:9px; background:var(--bg-elevated); color:var(--text);">
+              <option value="">Todos os status</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="pendente">Pendente</option>
+              <option value="recusado">Recusado</option>
+            </select>
+            <button class="btn btn-ghost" id="btnExportarExcel"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>Nome</th><th>Turma</th><th>Jogo</th><th>Tipo</th><th>Status</th><th>Valor</th><th>Comprovante</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaInscritos"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ABA TURMAS -->
+        <div class="admin-panel hidden" id="painelTurmas">
+          <div class="form-card" style="max-width:520px; margin-bottom:30px;">
+            <h3>Adicionar turma</h3>
+            <form id="formNovaTurma" style="display:flex; gap:10px; align-items:flex-end;">
+              <div class="field" style="flex:1; margin-bottom:0;">
+                <label for="novaTurmaNome">Nome da turma</label>
+                <input type="text" id="novaTurmaNome" placeholder="Ex: 2º DS" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Turma</th><th>Status</th><th>Inscritos</th><th>Ações</th></tr></thead>
+              <tbody id="tabelaTurmas"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ABA PREMIAÇÃO -->
+        <div class="admin-panel hidden" id="painelPremiacao">
+          <p style="margin-bottom:20px;">Defina o resultado oficial de cada modalidade. Isso é o que aparece publicamente na página de Premiação.</p>
+          <div id="formsPremiacao" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL EDITAR PARTICIPANTE -->
+  <div class="hidden" id="modalEditar" style="position:fixed; inset:0; background:rgba(8,18,38,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="form-card" style="max-width:480px;">
+      <h3>Editar participante</h3>
+      <form id="formEditarParticipante">
+        <input type="hidden" id="editId">
+        <div class="field"><label>Nome completo</label><input type="text" id="editNome" required></div>
+        <div class="field-row">
+          <div class="field"><label>Turma</label><select id="editTurma"></select></div>
+          <div class="field"><label>Jogo</label><select id="editJogo"></select></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Tipo</label>
+            <select id="editTipo"><option value="unico">Jogo unitário</option><option value="passe">Passe TJE</option></select>
+          </div>
+          <div class="field"><label>Status pagamento</label>
+            <select id="editStatus"><option value="pendente">Pendente</option><option value="aprovado">Aprovado</option><option value="recusado">Recusado</option></select>
+          </div>
+        </div>
+        <div class="field"><label>E-mail</label><input type="email" id="editEmail" required></div>
+        <div class="field"><label>Telefone do capitão</label><input type="tel" id="editTelefone" required></div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-ghost btn-block" id="btnFecharEditar">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/jogos-data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
