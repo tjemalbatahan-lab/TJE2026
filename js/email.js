@@ -10,6 +10,6 @@ function enviarEmailCredenciais(destinatario, nome, idParticipante, senha) {
     nome: nome,
     id_participante: idParticipante,
     senha: senha,
-    link_acesso: window.location.origin + "/area-participante.html"
+    link_acesso: "https://tjemalbatahan-lab.github.io/TJE2026/area-participante.html"
   });
 }
