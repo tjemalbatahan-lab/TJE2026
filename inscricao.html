@@ -137,6 +137,16 @@
           <img id="pixQr" class="pix-qr" src="" alt="QR Code PIX">
           <p style="font-size:13px;">Escaneie o QR Code no app do seu banco para pagar</p>
 
+          <div class="field" style="margin-top:16px; text-align:left;">
+            <label for="pixCopiaCola">Ou use o Pix Copia e Cola</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="pixCopiaCola" readonly style="flex:1;">
+              <button type="button" class="btn btn-ghost btn-sm" id="btnCopiarPix" title="Copiar código">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+
           <div class="alert alert-info" style="margin-top:20px; text-align:left;">
             <i class="fa-solid fa-circle-info"></i>
             <span>Depois de pagar, anexe o comprovante abaixo. Sua inscrição fica "pendente" até o administrador conferir e aprovar — você recebe o ID e a senha de acesso assim que for aprovado.</span>
@@ -144,8 +154,8 @@
 
           <form id="formComprovante" style="margin-top:22px; text-align:left;">
             <div class="field">
-              <label for="inpComprovante">Comprovante do pagamento (imagem ou PDF)</label>
-              <input type="file" id="inpComprovante" accept="image/*,application/pdf" required>
+              <label for="inpComprovante">Comprovante do pagamento (print ou foto)</label>
+              <input type="file" id="inpComprovante" accept="image/*" required>
             </div>
             <button type="submit" class="btn btn-primary btn-block" id="btnEnviarComprovante">
               Enviar comprovante <i class="fa-solid fa-arrow-right"></i>
@@ -198,9 +208,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/jogos-data.js"></script>
+<script src="js/pix-config.js"></script>
+<script src="js/pix.js"></script>
 <script src="js/main.js"></script>
 <script src="js/turmas.js"></script>
 <script src="js/inscricao.js"></script>
