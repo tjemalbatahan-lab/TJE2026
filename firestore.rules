@@ -38,6 +38,11 @@ service cloud.firestore {
       allow read, write: if ehAdmin();
     }
 
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if ehAdmin();
+    }
+
     // Lista de administradores: ninguém lê/escreve pelo cliente
     // (edite manualmente pelo Console do Firebase)
     match /admins/{adminId} {

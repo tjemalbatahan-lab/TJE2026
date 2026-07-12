@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="icon" type="image/png" href="/tje2026.png">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -15,7 +16,7 @@
 <header class="site-header">
   <nav class="nav container">
     <a href="index.html" class="nav-brand">
-      <span class="brand-badge">TJE</span>
+      <img src="/tje2026.png" alt="TJE 2026" class="brand-badge">
       <span class="brand-text"><strong>TJE 2026</strong><span>Painel Administrativo</span></span>
     </a>
     <div class="nav-actions">
@@ -25,7 +26,6 @@
 </header>
 
 <main>
-  <!-- LOGIN ADMIN -->
   <div class="login-wrap" id="telaLoginAdmin">
     <div class="login-card">
       <div class="login-brand">
@@ -48,7 +48,6 @@
     </div>
   </div>
 
-  <!-- PAINEL -->
   <div class="hidden" id="telaAdmin">
     <section class="section" style="padding-top:calc(var(--header-h) + 32px);">
       <div class="container">
@@ -64,9 +63,9 @@
           <button class="admin-tab active" data-tab="inscritos">Inscritos</button>
           <button class="admin-tab" data-tab="turmas">Turmas</button>
           <button class="admin-tab" data-tab="premiacao">Premiação</button>
+          <button class="admin-tab" data-tab="configuracoes">Configurações</button>
         </div>
 
-        <!-- ABA INSCRITOS -->
         <div class="admin-panel" id="painelInscritos">
           <div style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; align-items:center;">
             <input type="text" id="filtroBusca" placeholder="Buscar por nome, ID ou e-mail" style="flex:1; min-width:220px; padding:11px 14px; border:1px solid var(--border); border-radius:9px; background:var(--bg-elevated); color:var(--text);">
@@ -91,7 +90,6 @@
           </div>
         </div>
 
-        <!-- ABA TURMAS -->
         <div class="admin-panel hidden" id="painelTurmas">
           <div class="form-card" style="max-width:520px; margin-bottom:30px;">
             <h3>Adicionar turma</h3>
@@ -112,17 +110,29 @@
           </div>
         </div>
 
-        <!-- ABA PREMIAÇÃO -->
         <div class="admin-panel hidden" id="painelPremiacao">
           <p style="margin-bottom:20px;">Defina o resultado oficial de cada modalidade. Isso é o que aparece publicamente na página de Premiação.</p>
           <div id="formsPremiacao" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
+        </div>
+
+        <div class="admin-panel hidden" id="painelConfiguracoes">
+          <div class="form-card" style="max-width:520px;">
+            <h3>Encerramento das inscrições</h3>
+            <p style="margin-bottom:16px;">Data e horário exibidos no contador da página inicial. Horário de Brasília.</p>
+            <form id="formConfiguracoes" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+              <div class="field" style="flex:1; min-width:220px; margin-bottom:0;">
+                <label for="inputDataEncerramento">Data e hora de encerramento</label>
+                <input type="datetime-local" id="inputDataEncerramento" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Salvar</button>
+            </form>
+          </div>
         </div>
 
       </div>
     </section>
   </div>
 
-  <!-- MODAL EDITAR PARTICIPANTE -->
   <div class="hidden" id="modalEditar" style="position:fixed; inset:0; background:rgba(8,18,38,0.6); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px;">
     <div class="form-card" style="max-width:480px;">
       <h3>Editar participante</h3>
@@ -157,6 +167,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="js/email.js"></script>
 <script src="js/jogos-data.js"></script>
 <script src="js/main.js"></script>
 <script src="js/admin.js"></script>
