@@ -1,16 +1,7 @@
-/* ===========================================================
-   participante.js
-   Login por ID + senha, direto no Firebase Auth — sem servidor.
-   O ID digitado vira um e-mail sintético previsível (mesmo padrão
-   usado na aprovação, em admin.js) e a senha é conferida pelo
-   próprio Firebase Auth via signInWithEmailAndPassword.
-   =========================================================== */
-
 const telaLogin = document.getElementById("telaLogin");
 const telaPainel = document.getElementById("telaPainel");
 const btnSair = document.getElementById("btnSair");
 
-// ---------- LOGIN ----------
 document.getElementById("formLogin").addEventListener("submit", async (e) => {
   e.preventDefault();
   const erroBox = document.getElementById("loginErro");
@@ -26,7 +17,6 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
 
   try {
     await auth.signInWithEmailAndPassword(emailSintetico, senha);
-    // onAuthStateChanged (abaixo) cuida de carregar o painel
   } catch (err) {
     erroBox.textContent = "ID ou senha inválidos.";
     erroBox.classList.remove("hidden");
@@ -132,7 +122,6 @@ function renderizarCronograma(cronograma) {
     .join("");
 }
 
-// ---------- ALTERAR SENHA ----------
 const modalSenha = document.getElementById("modalSenha");
 document.getElementById("btnAlterarSenha").addEventListener("click", () => modalSenha.classList.remove("hidden"));
 document.getElementById("btnFecharModalSenha").addEventListener("click", () => modalSenha.classList.add("hidden"));
@@ -154,7 +143,7 @@ document.getElementById("formAlterarSenha").addEventListener("submit", async (e)
   try {
     const user = auth.currentUser;
     const credencial = firebase.auth.EmailAuthProvider.credential(user.email, senhaAtual);
-    await user.reauthenticateWithCredential(credencial); // exige a senha atual certa
+    await user.reauthenticateWithCredential(credencial);
     await user.updatePassword(senhaNova);
 
     modalSenha.classList.add("hidden");
@@ -166,7 +155,6 @@ document.getElementById("formAlterarSenha").addEventListener("submit", async (e)
   }
 });
 
-// ---------- COMPROVANTE PDF ----------
 document.getElementById("btnBaixarPdf").addEventListener("click", () => {
   const p = window._participanteAtual;
   if (!p) return;

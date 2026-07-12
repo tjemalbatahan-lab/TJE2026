@@ -1,10 +1,3 @@
-/* ===========================================================
-   premiacao.js
-   Lê o documento da coleção "jogos" (mesmo id do CATALOGO_JOGOS)
-   e exibe apenas: equipe campeã, melhor jogador, data da final
-   e status "Resultado oficial". Sem ranking, sem 2º/3º lugar.
-   =========================================================== */
-
 const seletor = document.getElementById("seletorJogo");
 const wrap = document.getElementById("champWrap");
 

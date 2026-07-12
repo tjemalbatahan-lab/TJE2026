@@ -1,11 +1,3 @@
-/* ===========================================================
-   inscricao.js
-   Fluxo: formulário -> mostra o QR code PIX fixo certo (unitário
-   ou passe) -> participante sobe o comprovante -> grava inscrição
-   "pendente" no Firestore + comprovante no Storage -> admin aprova
-   manualmente no painel.
-   =========================================================== */
-
 const inpJogo = document.getElementById("inpJogo");
 CATALOGO_JOGOS.forEach(j => {
   const opt = document.createElement("option");
@@ -59,7 +51,6 @@ form.addEventListener("submit", (e) => {
     return;
   }
 
-  // Mostra o QR code fixo certo pro tipo de inscrição escolhido
   document.getElementById("pixValor").textContent = formatarMoeda(valor);
   document.getElementById("pixQr").src = tipoInscricao === "passe"
     ? "img/qrcode-passe.png"
@@ -84,19 +75,16 @@ document.getElementById("formComprovante").addEventListener("submit", async (e) 
   btn.innerHTML = '<div class="spinner"></div> Enviando...';
 
   try {
-    // 1. cria a inscrição "pendente"
     const ref = await db.collection(COL_INSCRICOES).add({
       ...dadosInscricao,
       statusPagamento: "pendente",
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // 2. sobe o comprovante pro Storage, associado ao id da inscrição
     const extensao = arquivo.name.split(".").pop();
     const caminho = `${PASTA_COMPROVANTES}/${ref.id}.${extensao}`;
     await storage.ref(caminho).put(arquivo);
 
-    // 3. grava o caminho do comprovante na inscrição
     await ref.update({ comprovantePath: caminho });
 
     blocoPagamento.classList.add("hidden");

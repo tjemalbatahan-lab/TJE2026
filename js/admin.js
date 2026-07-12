@@ -1,9 +1,3 @@
-/* ===========================================================
-   admin.js — Painel Administrativo do TJE 2026
-   Login via Firebase Authentication (e-mail/senha). O acesso só é
-   liberado se o UID autenticado existir na coleção "admins".
-   =========================================================== */
-
 const telaLoginAdmin = document.getElementById("telaLoginAdmin");
 const telaAdmin = document.getElementById("telaAdmin");
 const btnSairAdmin = document.getElementById("btnSairAdmin");
@@ -11,7 +5,6 @@ const btnSairAdmin = document.getElementById("btnSairAdmin");
 let inscricoesCache = [];
 let turmasCache = [];
 
-// ---------- LOGIN ----------
 document.getElementById("formLoginAdmin").addEventListener("submit", async (e) => {
   e.preventDefault();
   const erroBox = document.getElementById("adminLoginErro");
@@ -60,7 +53,6 @@ auth.onAuthStateChanged(async (user) => {
   iniciarPainel();
 });
 
-// ---------- ABAS ----------
 document.querySelectorAll(".admin-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
@@ -79,9 +71,9 @@ function iniciarPainel() {
   escutarTurmas();
   montarFormsPremiacao();
   preencherSelectsEdicao();
+  carregarConfiguracoes();
 }
 
-// ---------- INSCRITOS ----------
 function escutarInscricoes() {
   db.collection(COL_INSCRICOES).orderBy("criadoEm", "desc").onSnapshot(snap => {
     inscricoesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -136,6 +128,7 @@ function renderizarTabelaInscritos() {
         <div class="table-actions">
           ${i.statusPagamento !== "aprovado" ? `<button class="btn btn-ghost btn-sm" data-acao="confirmar" data-id="${i.id}" title="Confirmar pagamento"><i class="fa-solid fa-check"></i></button>` : ""}
           ${i.statusPagamento === "aprovado" && i.senhaProvisoria ? `<button class="btn btn-ghost btn-sm" data-acao="vercredenciais" data-id="${i.id}" title="Ver credenciais"><i class="fa-solid fa-id-card"></i></button>` : ""}
+          ${i.statusPagamento === "aprovado" && i.senhaProvisoria && i.email ? `<button class="btn btn-ghost btn-sm" data-acao="reenviaremail" data-id="${i.id}" title="Reenviar e-mail com credenciais"><i class="fa-solid fa-paper-plane"></i></button>` : ""}
           <button class="btn btn-ghost btn-sm" data-acao="editar" data-id="${i.id}" title="Editar"><i class="fa-solid fa-pen"></i></button>
           <button class="btn btn-danger btn-sm" data-acao="cancelar" data-id="${i.id}" title="Cancelar inscrição"><i class="fa-solid fa-trash"></i></button>
         </div>
@@ -144,9 +137,8 @@ function renderizarTabelaInscritos() {
   `).join("");
 }
 
-// ---------- APROVAÇÃO (client-side, sem servidor) ----------
 function gerarSenhaAleatoria() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sem caracteres ambíguos (O/0, I/1)
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let senha = "";
   for (let i = 0; i < 6; i++) senha += chars[Math.floor(Math.random() * chars.length)];
   return senha;
@@ -169,13 +161,12 @@ async function aprovarInscricaoClient(inscricaoId) {
   const doc = await ref.get();
   if (!doc.exists) throw new Error("Inscrição não encontrada.");
   const inscricao = doc.data();
-  if (inscricao.statusPagamento === "aprovado") return; // já processado
+  if (inscricao.statusPagamento === "aprovado") return null;
 
   const idParticipante = await proximoIdParticipante();
   const senha = gerarSenhaAleatoria();
   const emailSintetico = `${idParticipante.toLowerCase()}@${DOMINIO_LOGIN}`;
 
-  // Cria o login no app AUXILIAR (não mexe na sessão do admin logado)
   const cred = await authAuxiliar.createUserWithEmailAndPassword(emailSintetico, senha);
   const authUid = cred.user.uid;
   await authAuxiliar.signOut();
@@ -187,6 +178,13 @@ async function aprovarInscricaoClient(inscricaoId) {
     authUid,
     aprovadoEm: new Date().toISOString()
   });
+
+  return {
+    idParticipante,
+    senha,
+    email: inscricao.email,
+    nome: inscricao.nomeCompleto
+  };
 }
 
 function rotuloStatusAdmin(s) {
@@ -203,10 +201,19 @@ document.getElementById("tabelaInscritos").addEventListener("click", async (e) =
   const item = inscricoesCache.find(i => i.id === id);
 
   if (btn.dataset.acao === "confirmar") {
-    if (!confirm("Confirmar manualmente o pagamento deste participante? Isso cria o login dele.")) return;
+    if (!confirm("Confirmar manualmente o pagamento deste participante? Isso cria o login dele e envia as credenciais por e-mail.")) return;
     btn.disabled = true;
     try {
-      await aprovarInscricaoClient(id);
+      const dados = await aprovarInscricaoClient(id);
+      if (dados && dados.email) {
+        try {
+          await enviarEmailCredenciais(dados.email, dados.nome, dados.idParticipante, dados.senha);
+          alert("Participante aprovado! E-mail com as credenciais enviado para " + dados.email + ".");
+        } catch (errEmail) {
+          console.error(errEmail);
+          alert("Participante aprovado, mas o e-mail não pôde ser enviado. Use o botão de credenciais pra repassar manualmente.");
+        }
+      }
     } catch (err) {
       console.error(err);
       alert("Não foi possível aprovar: " + err.message);
@@ -216,6 +223,18 @@ document.getElementById("tabelaInscritos").addEventListener("click", async (e) =
 
   if (btn.dataset.acao === "vercredenciais") {
     alert(`ID: ${item.idParticipante}\nSenha: ${item.senhaProvisoria}\n\nEnvie essas credenciais pro participante (WhatsApp/e-mail). Depois que ele trocar a senha, elas deixam de valer.`);
+  }
+
+  if (btn.dataset.acao === "reenviaremail") {
+    btn.disabled = true;
+    try {
+      await enviarEmailCredenciais(item.email, item.nomeCompleto, item.idParticipante, item.senhaProvisoria);
+      alert("E-mail reenviado para " + item.email + ".");
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível enviar o e-mail. Confira a configuração do EmailJS.");
+    }
+    btn.disabled = false;
   }
 
   if (btn.dataset.acao === "comprovante") {
@@ -235,7 +254,6 @@ document.getElementById("tabelaInscritos").addEventListener("click", async (e) =
   if (btn.dataset.acao === "editar") abrirModalEdicao(item);
 });
 
-// ---------- EDITAR PARTICIPANTE ----------
 const modalEditar = document.getElementById("modalEditar");
 function preencherSelectsEdicao() {
   const selJogo = document.getElementById("editJogo");
@@ -277,7 +295,6 @@ document.getElementById("formEditarParticipante").addEventListener("submit", asy
   modalEditar.classList.add("hidden");
 });
 
-// ---------- EXPORTAR EXCEL ----------
 document.getElementById("btnExportarExcel").addEventListener("click", () => {
   const linhas = inscricoesCache.map(i => ({
     ID: i.idParticipante || "",
@@ -296,7 +313,6 @@ document.getElementById("btnExportarExcel").addEventListener("click", () => {
   XLSX.writeFile(wb, `tje2026-inscritos-${new Date().toISOString().slice(0, 10)}.xlsx`);
 });
 
-// ---------- TURMAS ----------
 function escutarTurmas() {
   db.collection(COL_TURMAS).orderBy("nome").onSnapshot(snap => {
     turmasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -356,7 +372,6 @@ document.getElementById("tabelaTurmas").addEventListener("click", async (e) => {
   }
 });
 
-// ---------- PREMIAÇÃO ----------
 function montarFormsPremiacao() {
   const wrap = document.getElementById("formsPremiacao");
   wrap.innerHTML = CATALOGO_JOGOS.map(j => `
@@ -401,3 +416,37 @@ function montarFormsPremiacao() {
     setTimeout(() => (btn.textContent = original), 1500);
   });
 }
+
+async function carregarConfiguracoes() {
+  const input = document.getElementById("inputDataEncerramento");
+  if (!input) return;
+  try {
+    const doc = await db.collection("config").doc("site").get();
+    if (doc.exists && doc.data().dataEncerramento) {
+      const iso = doc.data().dataEncerramento;
+      input.value = iso.slice(0, 16);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+document.getElementById("formConfiguracoes")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const input = document.getElementById("inputDataEncerramento");
+  if (!input.value) return;
+  const btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true;
+  try {
+    await db.collection("config").doc("site").set({
+      dataEncerramento: `${input.value}:00-03:00`
+    }, { merge: true });
+    const original = btn.textContent;
+    btn.textContent = "Salvo!";
+    setTimeout(() => (btn.textContent = original), 1500);
+  } catch (err) {
+    console.error(err);
+    alert("Não foi possível salvar a configuração.");
+  }
+  btn.disabled = false;
+});

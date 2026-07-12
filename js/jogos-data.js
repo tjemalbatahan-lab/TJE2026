@@ -1,9 +1,3 @@
-/* ===========================================================
-   jogos-data.js — catálogo dos jogos do TJE 2026
-   O "id" é também o id do registro na tabela "jogos" do banco de
-   dados, onde o admin define o campeão de cada modalidade.
-   =========================================================== */
-
 const CATALOGO_JOGOS = [
   { id: "cs2", nome: "CS2", icone: "fa-crosshairs" },
   { id: "freefire", nome: "Free Fire", icone: "fa-fire" },
@@ -14,4 +8,4 @@ const CATALOGO_JOGOS = [
 
 const VALOR_JOGO_UNITARIO = 6.0;
 const VALOR_PASSE_TJE = 11.9;
-const VALOR_PASSE_TJE_ORIGINAL = 14.9; // preço "de", exibido riscado durante a promoção
+const VALOR_PASSE_TJE_ORIGINAL = 14.9;

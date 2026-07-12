@@ -1,8 +1,3 @@
-/* ===========================================================
-   main.js — comportamento comum a todas as páginas
-   =========================================================== */
-
-// Menu mobile
 const navToggle = document.getElementById("navToggle");
 const navLinks = document.getElementById("navLinks");
 if (navToggle && navLinks) {
@@ -19,7 +14,6 @@ if (navToggle && navLinks) {
   );
 }
 
-// Marca o link ativo no menu conforme a página atual
 (function marcarLinkAtivo() {
   const pagina = location.pathname.split("/").pop() || "index.html";
   document.querySelectorAll(".nav-links a").forEach(a => {
@@ -27,12 +21,10 @@ if (navToggle && navLinks) {
   });
 })();
 
-// Ano no rodapé
 document.querySelectorAll(".footer-year").forEach(el => {
   el.textContent = new Date().getFullYear();
 });
 
-// Utilitário simples de formatação de moeda
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }

@@ -1,9 +1,3 @@
-/* ===========================================================
-   turmas.js — carrega as turmas cadastradas no Firestore
-   Atualiza automaticamente quando o admin adiciona/edita/remove
-   uma turma (onSnapshot em tempo real, sem precisar recarregar).
-   =========================================================== */
-
 function carregarTurmasNoSelect(selectId = "turmaSelect") {
   const select = document.getElementById(selectId);
   if (!select) return;

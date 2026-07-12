@@ -1,12 +1,6 @@
-/* ===========================================================
-   countdown.js — cronômetro de encerramento das inscrições
-   Ajuste a constante DATA_ENCERRAMENTO com a data/hora oficial.
-   =========================================================== */
+const DATA_ENCERRAMENTO_PADRAO = new Date("2026-07-20T23:59:59-03:00");
 
-// Data e hora de encerramento das inscrições (horário de Brasília)
-const DATA_ENCERRAMENTO = new Date("2026-07-20T23:59:59-03:00");
-
-function iniciarCountdown() {
+async function iniciarCountdown() {
   const elDias = document.getElementById("cd-dias");
   const elHoras = document.getElementById("cd-horas");
   const elMin = document.getElementById("cd-min");
@@ -16,9 +10,20 @@ function iniciarCountdown() {
 
   if (!elDias || !elHoras || !elMin || !elSeg) return;
 
+  let dataEncerramento = DATA_ENCERRAMENTO_PADRAO;
+
+  try {
+    const snap = await db.collection("config").doc("site").get();
+    if (snap.exists && snap.data().dataEncerramento) {
+      dataEncerramento = new Date(snap.data().dataEncerramento);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
   function atualizar() {
     const agora = new Date();
-    const diff = DATA_ENCERRAMENTO - agora;
+    const diff = dataEncerramento - agora;
 
     if (diff <= 0) {
       elDias.textContent = "00";
