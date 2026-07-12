@@ -4,7 +4,7 @@
    =========================================================== */
 
 // Data e hora de encerramento das inscrições (horário de Brasília)
-const DATA_ENCERRAMENTO = new Date("2026-03-20T23:59:59-03:00");
+const DATA_ENCERRAMENTO = new Date("2026-07-20T23:59:59-03:00");
 
 function iniciarCountdown() {
   const elDias = document.getElementById("cd-dias");
