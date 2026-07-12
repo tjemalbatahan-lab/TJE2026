@@ -51,6 +51,11 @@ function montarPayloadPix({ chave, nomeRecebedor, cidade, valor, txid }) {
 
 // Gera o QR Code (data URL de imagem) a partir do payload do Pix.
 function gerarQrCodePixDataUrl(payload) {
+  if (typeof qrcode !== "function") {
+    throw new Error(
+      "Biblioteca de QR Code não carregada (qrcode-generator). Verifique sua conexão ou recarregue a página."
+    );
+  }
   const qr = qrcode(0, "M"); // 0 = detecta o tamanho automaticamente, M = correção de erro média
   qr.addData(payload);
   qr.make();

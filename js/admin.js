@@ -422,6 +422,106 @@ function montarFormsPremiacao() {
   });
 }
 
+// ---- Máscara da Chave Pix, de acordo com o tipo selecionado ----
+
+function pixSomenteDigitos(v) {
+  return (v || "").replace(/\D/g, "");
+}
+
+function pixMaskCpf(v) {
+  return pixSomenteDigitos(v)
+    .slice(0, 11)
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
+function pixMaskCnpj(v) {
+  return pixSomenteDigitos(v)
+    .slice(0, 14)
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+}
+
+function pixMaskTelefone(v) {
+  const d = pixSomenteDigitos(v).slice(0, 11);
+  if (d.length <= 10) {
+    return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+  }
+  return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+}
+
+function pixPlaceholderPorTipo(tipo) {
+  return {
+    cpf: "000.000.000-00",
+    cnpj: "00.000.000/0000-00",
+    telefone: "(00) 00000-0000",
+    email: "seuemail@exemplo.com",
+    aleatoria: "chave aleatória (UUID)"
+  }[tipo] || "";
+}
+
+// Converte o valor digitado (já mascarado) para o formato que o Pix exige de fato.
+function pixNormalizarChave(tipo, valorDigitado) {
+  const digits = pixSomenteDigitos(valorDigitado);
+  switch (tipo) {
+    case "cpf":
+      return digits.slice(0, 11);
+    case "cnpj":
+      return digits.slice(0, 14);
+    case "telefone": {
+      let d = digits;
+      if (d.length > 11 && d.startsWith("55")) d = d.slice(2);
+      return "+55" + d.slice(0, 11);
+    }
+    case "email":
+      return (valorDigitado || "").trim().toLowerCase();
+    default:
+      return (valorDigitado || "").trim();
+  }
+}
+
+// Ao carregar uma chave já salva, remonta a versão mascarada para exibir no campo.
+function pixParaExibicao(tipo, chaveSalva) {
+  if (tipo === "telefone") {
+    let d = pixSomenteDigitos(chaveSalva);
+    if (d.startsWith("55")) d = d.slice(2);
+    return pixMaskTelefone(d);
+  }
+  if (tipo === "cpf") return pixMaskCpf(chaveSalva);
+  if (tipo === "cnpj") return pixMaskCnpj(chaveSalva);
+  return chaveSalva || "";
+}
+
+function pixDetectarTipo(chave) {
+  if (!chave) return "telefone";
+  if (chave.includes("@")) return "email";
+  if (chave.startsWith("+")) return "telefone";
+  const d = pixSomenteDigitos(chave);
+  if (d.length === 11) return "cpf";
+  if (d.length === 14) return "cnpj";
+  return "aleatoria";
+}
+
+(function configurarMascaraPixChave() {
+  const selectTipo = document.getElementById("inputPixTipo");
+  const inputChave = document.getElementById("inputPixChave");
+  if (!selectTipo || !inputChave) return;
+
+  const aplicarMascara = () => {
+    const tipo = selectTipo.value;
+    inputChave.placeholder = pixPlaceholderPorTipo(tipo);
+    if (tipo === "cpf") inputChave.value = pixMaskCpf(inputChave.value);
+    else if (tipo === "cnpj") inputChave.value = pixMaskCnpj(inputChave.value);
+    else if (tipo === "telefone") inputChave.value = pixMaskTelefone(inputChave.value);
+  };
+
+  selectTipo.addEventListener("change", aplicarMascara);
+  inputChave.addEventListener("input", aplicarMascara);
+})();
+
 async function carregarConfiguracoes() {
   const input = document.getElementById("inputDataEncerramento");
   if (!input) return;
@@ -433,7 +533,11 @@ async function carregarConfiguracoes() {
     }
     if (doc.exists && doc.data().pix) {
       const pix = doc.data().pix;
-      document.getElementById("inputPixChave").value = pix.chave || "";
+      const tipo = pix.tipo || pixDetectarTipo(pix.chave);
+      const selectTipo = document.getElementById("inputPixTipo");
+      selectTipo.value = tipo;
+      document.getElementById("inputPixChave").placeholder = pixPlaceholderPorTipo(tipo);
+      document.getElementById("inputPixChave").value = pixParaExibicao(tipo, pix.chave || "");
       document.getElementById("inputPixNome").value = pix.nomeRecebedor || "";
       document.getElementById("inputPixCidade").value = pix.cidade || "";
     }
@@ -464,7 +568,8 @@ document.getElementById("formConfiguracoes")?.addEventListener("submit", async (
 
 document.getElementById("formConfigPix")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const chave = document.getElementById("inputPixChave").value.trim();
+  const tipo = document.getElementById("inputPixTipo").value;
+  const chave = pixNormalizarChave(tipo, document.getElementById("inputPixChave").value);
   const nomeRecebedor = document.getElementById("inputPixNome").value.trim();
   const cidade = document.getElementById("inputPixCidade").value.trim();
   if (!chave || !nomeRecebedor || !cidade) return;
@@ -473,7 +578,7 @@ document.getElementById("formConfigPix")?.addEventListener("submit", async (e) =
   btn.disabled = true;
   try {
     await db.collection("config").doc("site").set({
-      pix: { chave, nomeRecebedor, cidade }
+      pix: { chave, tipo, nomeRecebedor, cidade }
     }, { merge: true });
     const original = btn.textContent;
     btn.textContent = "Salvo!";
