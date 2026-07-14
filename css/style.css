@@ -147,7 +147,43 @@ img.brand-badge{
   background-size:42px 42px;
   mask-image:radial-gradient(circle at 70% 20%, black, transparent 65%);
 }
-.hero-inner{ position:relative; z-index:1; text-align:center; max-width:780px; margin:0 auto; }
+.hero-inner{ position:relative; z-index:2; text-align:center; max-width:780px; margin:0 auto; }
+
+/* ===== Fundo animado com nuvens ===== */
+.hero-game-bg{
+  position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none;
+}
+
+.hero-game-bg .cloud{
+  position:absolute; width:64px; height:28px; opacity:.5;
+  background:linear-gradient(180deg,#fff,#DCE6FA);
+  clip-path:polygon(20% 0%,80% 0%,80% 15%,90% 15%,90% 30%,100% 30%,100% 60%,90% 60%,90% 75%,70% 75%,70% 100%,30% 100%,30% 75%,10% 75%,10% 60%,0% 60%,0% 30%,10% 30%,10% 15%,20% 15%);
+}
+.cloud-1{ top:10%; left:-80px; animation:cloudDrift 26s linear infinite; }
+.cloud-2{ top:26%; left:-80px; width:44px; height:20px; opacity:.35; animation:cloudDrift 34s linear infinite; animation-delay:-10s; }
+.cloud-3{ top:6%; left:-80px; width:52px; height:22px; opacity:.4; animation:cloudDrift 40s linear infinite; animation-delay:-22s; }
+.cloud-4{ top:38%; left:-80px; width:38px; height:18px; opacity:.3; animation:cloudDrift 30s linear infinite; animation-delay:-4s; }
+.cloud-5{ top:18%; left:-80px; width:58px; height:24px; opacity:.32; animation:cloudDrift 46s linear infinite; animation-delay:-16s; }
+.cloud-6{ top:55%; left:-80px; width:70px; height:30px; opacity:.28; animation:cloudDrift 38s linear infinite; animation-delay:-8s; }
+.cloud-7{ top:68%; left:-80px; width:46px; height:20px; opacity:.24; animation:cloudDrift 44s linear infinite; animation-delay:-26s; }
+.cloud-8{ top:80%; left:-80px; width:60px; height:26px; opacity:.2; animation:cloudDrift 50s linear infinite; animation-delay:-14s; }
+@keyframes cloudDrift{
+  from{ transform:translateX(0); }
+  to{ transform:translateX(calc(100vw + 160px)); }
+}
+
+.hero-game-bg .ground-line{
+  position:absolute; left:0; right:0; bottom:14%;
+  height:2px; background:repeating-linear-gradient(90deg, rgba(255,255,255,.18) 0 10px, transparent 10px 20px);
+}
+
+@media (max-width:640px){
+  .hero-game-bg .cloud-7,
+  .hero-game-bg .cloud-8{ display:none; }
+}
+@media (prefers-reduced-motion: reduce){
+  .hero-game-bg *{ animation:none !important; }
+}
 .eyebrow{
   display:inline-flex; align-items:center; gap:8px;
   background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
