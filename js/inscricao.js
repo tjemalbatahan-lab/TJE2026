@@ -45,6 +45,9 @@ function atualizarCardsForma() {
 radiosForma.forEach(r => r.addEventListener("change", atualizarCardsForma));
 atualizarCardsForma();
 
+const DOMINIO_EMAIL_ESCOLA = "@escola.pr.gov.br";
+const inpEmail = document.getElementById("inpEmail");
+
 const form = document.getElementById("formInscricao");
 const blocoFormaPagamento = document.getElementById("blocoFormaPagamento");
 const blocoPagamento = document.getElementById("blocoPagamento");
@@ -61,6 +64,12 @@ form.addEventListener("submit", (e) => {
   const tipoInscricao = document.querySelector('input[name="tipoInscricao"]:checked').value;
   const valor = tipoInscricao === "passe" ? VALOR_PASSE_TJE : VALOR_JOGO_UNITARIO;
 
+  const email = inpEmail.value.trim().toLowerCase();
+  if (!email.endsWith(DOMINIO_EMAIL_ESCOLA)) {
+    mostrarErro("Use seu e-mail institucional (" + DOMINIO_EMAIL_ESCOLA + ").");
+    return;
+  }
+
   dadosInscricao = {
     nomeCompleto: document.getElementById("inpNome").value.trim(),
     turmaId: document.getElementById("turmaSelect").value,
@@ -69,7 +78,7 @@ form.addEventListener("submit", (e) => {
     jogoNome: inpJogo.selectedOptions[0]?.textContent || "",
     tipoInscricao,
     possuiPasse: tipoInscricao === "passe",
-    email: document.getElementById("inpEmail").value.trim(),
+    email,
     telefoneCapitao: document.getElementById("inpTelefone").value.trim(),
     valor
   };
