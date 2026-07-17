@@ -1,7 +1,7 @@
 const CATALOGO_JOGOS = [
   { id: "cs2", nome: "CS2", icone: "fa-crosshairs" },
   { id: "brawlstars", nome: "Brawl Stars", icone: "fa-star" },
-  { id: "clashroyale", nome: "Clash Royale", icone: "fa-chess-rook" },
+  { id: "fallguys", nome: "Fall Guys", icone: "fa-person-running" },
   { id: "streetfighter", nome: "Street Fighter", icone: "fa-hand-fist" },
   { id: "freefire", nome: "Free Fire", icone: "fa-fire" }
 ];
